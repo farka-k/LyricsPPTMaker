@@ -10,7 +10,7 @@
    * 구글 검색 API로 부터 상위 5개만을 가져오므로 원하는 곡과 다른 곡이 결과에 포함될 수 있음
    * 가사는 수정이 가능하며, 한 문단이 하나에 슬라이드에 삽입된다.
    
-    ![image](https://github.com/farka-k/LyricsPPTMaker/assets/32349691/690ecc29-98fb-4aeb-876e-49a954bbf140)
+   ![image](https://github.com/farka-k/LyricsPPTMaker/assets/32349691/690ecc29-98fb-4aeb-876e-49a954bbf140)
    * 수정 가사는 저장되지 않으므로 표시 곡 변경시 주의
 
 ### 3. 슬라이드 스타일에 대한 프리셋 설정(관련 기능 미구현)
