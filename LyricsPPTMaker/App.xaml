@@ -6,6 +6,19 @@
              xmlns:local="clr-namespace:LyricsPPTMaker"
              StartupUri="/Views/MainWindow.xaml">
     <Application.Resources>
+        <local:FirstDegreeFunctionConverter x:Key="PreviewContentSize" A="0.25" B="0"/>
+        <local:EnumtoBooleanConverter x:Key="EnumtoBooleanConverter"/>
+        <local:SlideSizeConverter x:Key="SlideSizeConverter"/>
+        <local:FirstDegreeFunctionConverter x:Key="PreviewFrameSize" A="9.44875" B="0"/>
+        <local:PositiveIntToStringConverter x:Key="PositiveIntToStringConverter"/>
+        <local:SongInfoItemConverter x:Key="SongInfoItemConverter"/>
+        <local:BoolToFontWeightConverter x:Key="BoolToFontWeight"/>
+        <local:BoolToFontStyleConverter x:Key="BoolToFontStyle"/>
+        <local:BoolToTextDecorationConverter x:Key="BoolToTextDecoration"/>
+        <local:LyricsVAlignmentConverter x:Key="LyricsVAlignmentConverter"/>
+        <local:AlignmentOffsetToPaddingConverter x:Key="AlignmentOffsetToPaddingConverter"/>
+        <local:FirstParagraphConverter x:Key="FirstParagraphConverter"/>
+        
         <SolidColorBrush x:Key="DarkMode.Base.Background" Color="#FF202225"/>
         <SolidColorBrush x:Key="DarkMode.Control.Static.Background" Color="#FF36393F"/>
         <SolidColorBrush x:Key="DarkMode.Control.MouseOver.Background" Color="#FF587483" />
@@ -40,18 +53,7 @@
         <Style TargetType="{x:Type ToolTip}" BasedOn="{StaticResource baseStyle}">
             <Setter Property="Background" Value="{StaticResource DarkMode.Control.Static.Background}" />
         </Style>
-        <local:FirstDegreeFunctionConverter x:Key="PreviewContentSize" A="0.25" B="0"/>
-        <local:EnumtoBooleanConverter x:Key="EnumtoBooleanConverter"/>
-        <local:SlideSizeConverter x:Key="SlideSizeConverter"/>
-        <local:FirstDegreeFunctionConverter x:Key="PreviewFrameSize" A="9.44875" B="0"/>
-        <local:PositiveIntToStringConverter x:Key="PositiveIntToStringConverter"/>
-        <local:SongInfoItemConverter x:Key="SongInfoItemConverter"/>
-        <local:BoolToFontWeightConverter x:Key="BoolToFontWeight"/>
-        <local:BoolToFontStyleConverter x:Key="BoolToFontStyle"/>
-        <local:BoolToTextDecorationConverter x:Key="BoolToTextDecoration"/>
-        <local:LyricsVAlignmentConverter x:Key="LyricsVAlignmentConverter"/>
-        <local:AlignmentOffsetToPaddingConverter x:Key="AlignmentOffsetToPaddingConverter"/>
-        
+
         <SolidColorBrush x:Key="RadioButton.Static.Glyph" Color="#FF212121"/>
         <SolidColorBrush x:Key="RadioButton.MouseOver.Background" Color="#FF587483"/>
         <SolidColorBrush x:Key="RadioButton.MouseOver.Border" Color="#FF5593FF"/>

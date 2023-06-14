@@ -7,7 +7,7 @@
         xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
         xmlns:local="clr-namespace:LyricsPPTMaker"
         mc:Ignorable="d"
-        Title="{Binding Title}" Height="650" Width="600">
+        Title="{Binding Title}" Height="650" Width="600" Icon="..\Resources\song_lyrics_icon_title.ico">
     <Grid Background="{StaticResource DarkMode.Base.Background}">
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
@@ -19,7 +19,7 @@
             <RowDefinition Height="*"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="1.4*"/>
-            <RowDefinition Height="1.1*"/>
+            <RowDefinition Height="1.2*"/>
             <RowDefinition Height="*"/>
 
         </Grid.RowDefinitions>
@@ -34,7 +34,7 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
             <TextBox Name="TxtSearchBox" Height="36" Margin="5" FontSize="20"
-                                 Text="{Binding SearchboxText}">
+                                 Text="{Binding SearchboxText, UpdateSourceTrigger=PropertyChanged}" ToolTip="곡 제목을 입력하세요">
                 <i:Interaction.Triggers>
                     <i:EventTrigger EventName="GotFocus">
                         <i:InvokeCommandAction Command="{Binding SearchboxGotFocusCommand}"/>
@@ -42,10 +42,13 @@
                     <i:EventTrigger EventName="LostFocus">
                         <i:InvokeCommandAction Command="{Binding SearchboxLostFocusCommand}"/>
                     </i:EventTrigger>
+                    <i:KeyTrigger Key="Return">
+                        <i:InvokeCommandAction Command="{Binding SearchLyricsCommand}"/>
+                    </i:KeyTrigger>
                 </i:Interaction.Triggers>
             </TextBox>
             <Button Template="{DynamicResource ButtonTemplate1}" Name="BtnSearchLyric" Grid.Column="1" Margin="5"
-                                Command="{Binding SearchLyricsCommand}">
+                                Command="{Binding SearchLyricsCommand}" ToolTip="검색">
                 <Image Source="\Resources\search-white.png" Width="32" Height="32"/>
             </Button>
         </Grid>
@@ -59,7 +62,7 @@
                 <ColumnDefinition Width="2*"/>
             </Grid.ColumnDefinitions>
             <Label Content="Title" Margin="5"/>
-            <TextBox Grid.Column="1" Margin="5,0" IsEnabled="False">
+            <TextBox Grid.Column="1" Margin="5,0" IsEnabled="False" ToolTip="제목">
                 <TextBox.Text>
                     <MultiBinding Converter="{StaticResource SongInfoItemConverter}" ConverterParameter="Title" Mode="OneWay">
                         <Binding Path="SongList"/>
@@ -68,7 +71,7 @@
                 </TextBox.Text>
             </TextBox>
             <Label Content="Artist" Grid.Column="2" Margin="5"/>
-            <TextBox Grid.Column="3" Margin="5,0" IsEnabled="False">
+            <TextBox Grid.Column="3" Margin="5,0" IsEnabled="False" ToolTip="아티스트">
                 <TextBox.Text>
                     <MultiBinding Converter="{StaticResource SongInfoItemConverter}" ConverterParameter="Artist" Mode="OneWay">
                         <Binding Path="SongList"/>
@@ -77,7 +80,7 @@
                 </TextBox.Text>
             </TextBox>
             <Label Content="Album" Grid.Column="4" Margin="5"/>
-            <TextBox Grid.Column="5" Margin="5,0" IsEnabled="False">
+            <TextBox Grid.Column="5" Margin="5,0" IsEnabled="False" ToolTip="앨범">
                 <TextBox.Text>
                     <MultiBinding Converter="{StaticResource SongInfoItemConverter}" ConverterParameter="Album" Mode="OneWay">
                         <Binding Path="SongList"/>
@@ -95,7 +98,7 @@
                 <ColumnDefinition Width="2*"/>
             </Grid.ColumnDefinitions>
 
-            <TextBox Name="TxtCurrentLyricNumber" Grid.Column="0" Margin="5 0" IsEnabled="False"
+            <TextBox Name="TxtCurrentLyricNumber" Grid.Column="0" Margin="5 0" IsEnabled="False" ToolTip="현재 곡 번호"
                      Text="{Binding CurrentSongListIndex, Mode=OneWay, Converter={StaticResource PositiveIntToStringConverter}, ConverterParameter=1}">
                 <i:Interaction.Triggers>
                     <i:EventTrigger EventName="TextChanged">
@@ -104,10 +107,10 @@
                 </i:Interaction.Triggers>
             </TextBox>
             <Label Content="/" Grid.Column="1" HorizontalContentAlignment="Center"/>
-            <TextBox Name="TxtTotalLyricCount" Grid.Column="2" Margin="5 0" IsEnabled="False"
+            <TextBox Name="TxtTotalLyricCount" Grid.Column="2" Margin="5 0" IsEnabled="False" ToolTip="총 검색 갯수"
                      Text="{Binding TotalSongs, Mode=OneWay, Converter={StaticResource PositiveIntToStringConverter}, ConverterParameter=0}"/>
-            <Button Content="&lt;" Grid.Column="3" Margin="5 0" Command="{Binding GetPreviousSongInfoCommand}"/>
-            <Button Content="&gt;" Grid.Column="4" Margin="5 0" Command="{Binding GetNextSongInfoCommand}"/>
+            <Button Content="_&lt;" Grid.Column="3" Margin="5 0" ToolTip="이전 곡" Command="{Binding GetPreviousSongInfoCommand}"/>
+            <Button Content="_&gt;" Grid.Column="4" Margin="5 0" ToolTip="다음 곡" Command="{Binding GetNextSongInfoCommand}"/>
         </Grid>
         <ListBox Name="SongListBox" Grid.Row="2" Grid.Column="1" Background="Transparent" BorderThickness="0" ItemsSource="{Binding SongList}"
                  VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Visibility="Collapsed" 
@@ -124,15 +127,9 @@
         </ListBox>
         <TextBox Name="TxtLyrics" Grid.Row="3" Grid.ColumnSpan="2" Margin="5"
                              TextWrapping="Wrap" AcceptsReturn="True"  AcceptsTab="True" VerticalScrollBarVisibility="Auto"
-                             VerticalAlignment="Stretch" Text="{Binding LyricsboxText}">
-            <i:Interaction.Triggers>
-                <i:EventTrigger EventName="LostFocus">
-                    <i:InvokeCommandAction Command="{Binding LyricsLostFocusCommand}"/>
-                </i:EventTrigger>
-            </i:Interaction.Triggers>
-        </TextBox>
+                             VerticalAlignment="Stretch" Text="{Binding LyricsboxText}"/>
         <Button Name="BtnUsage" Grid.Row="3" Grid.Column="1" Content="?" Template="{DynamicResource ButtonTemplate1}" 
-                            FontSize="20" Width="30"
+                            FontSize="20" Width="30" Focusable="False"
                             HorizontalAlignment="Right" VerticalAlignment="Top" Margin="5" BorderBrush="White"
                             >
             <i:Interaction.Triggers>
@@ -156,9 +153,9 @@
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-            <Label Content="Preset" Margin="5"/>
-            <ComboBox Style="{DynamicResource ComboBoxStyle1}"  Grid.Column="1" VerticalAlignment="Center" Margin="3 0"></ComboBox>
-            <Button Content="Manage" Grid.Column="2" Margin="5"></Button>
+            <Label Content="_Preset" Margin="5" Focusable="False"/>
+            <ComboBox Style="{DynamicResource ComboBoxStyle1}"  Grid.Column="1" VerticalAlignment="Center" Margin="3 0" ToolTip="현재 미구현 기능입니다"></ComboBox>
+            <Button Content="_Manage" Grid.Column="2" Margin="5" ToolTip="현재 미구현 기능입니다"></Button>
         </Grid>
         <Grid Grid.Row="5" Grid.ColumnSpan="2">
             <Grid.ColumnDefinitions>
@@ -167,7 +164,7 @@
                 <ColumnDefinition Width="3*"/>
             </Grid.ColumnDefinitions>
             <Label Content="SlideSize" Margin="5"/>
-            <RadioButton GroupName="SlideSize" Content="WideScreen(16:9)" Grid.Column="1">
+            <RadioButton GroupName="SlideSize" Content="_WideScreen(16:9)" Grid.Column="1">
                 <RadioButton.IsChecked>
                     <MultiBinding Converter="{StaticResource SlideSizeConverter}" ConverterParameter="WideScreen">
                         <Binding Path="SizeType"/>
@@ -175,7 +172,7 @@
                     </MultiBinding>
                 </RadioButton.IsChecked>
             </RadioButton>
-            <RadioButton GroupName="SlideSize" Content="Normal(4:3)" Grid.Column="2">
+            <RadioButton GroupName="SlideSize" Content="_Normal(4:3)" Grid.Column="2">
                 <RadioButton.IsChecked>
                     <MultiBinding Converter="{StaticResource SlideSizeConverter}" ConverterParameter="Normal">
                         <Binding Path="SizeType"/>
@@ -218,10 +215,10 @@
                 <ColumnDefinition Width="2.5*"/>
                 <ColumnDefinition Width="3*"/>
             </Grid.ColumnDefinitions>
-            <Label Content="Font" Margin="5"/>
+            <Label Content="_Font" Margin="5" Target="{Binding ElementName=CmbFontList}"/>
             <ComboBox Style="{DynamicResource ComboBoxStyle1}" Grid.Column="1" Name="CmbFontList" Margin="3 0"
                                   ItemsSource="{Binding FontList, Mode=OneTime}" IsEditable="True" SelectedIndex="{Binding FontSelectedIndex}" />
-            <Label Grid.Column="2" Margin="2">Size</Label>
+            <Label Grid.Column="2" Margin="2" Content="_Size" Target="{Binding ElementName=NumFontSize}"/>
             <xctk:UIntegerUpDown Name="NumFontSize" Grid.Column="3" Margin="0 10 5 10" Text="{Binding FontSize}"/>
         </Grid>
         <Grid Grid.Row="7" Grid.Column="1">
@@ -232,7 +229,7 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
             <Label Content="Emphasis" Margin="5"/>
-            <CheckBox Template="{DynamicResource ImageCheckBoxTemplate}" Name="CheckBold" Grid.Column="1" Margin="5 5 0 5"
+            <CheckBox Template="{DynamicResource ImageCheckBoxTemplate}" Name="Check_old" Grid.Column="1" Margin="5 5 0 5"
                                   IsChecked="{Binding IsBold}">
                 <Image Source="\Resources\bold-white.png" Width="28" Height="28" Margin="2"/>
             </CheckBox>
@@ -253,7 +250,7 @@
                                  FontWeight="{Binding IsBold,Converter={StaticResource BoolToFontWeight}}"
                                  FontStyle="{Binding IsItalic,Converter={StaticResource BoolToFontStyle}}"
                                  TextDecorations="{Binding IsUnderline,Converter={StaticResource BoolToTextDecoration}}"
-                                 VerticalAlignment="Stretch" TextAlignment="Center"
+                                 VerticalAlignment="Stretch" TextAlignment="Center" Focusable="False"
                                      Text="{Binding FontPreviewText}" Margin="0,2,0,-2"/>
         </Grid>
         <Grid Grid.Row="9">
@@ -291,22 +288,14 @@
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-            <Label Content="Offset ( cm )" Margin="5"/>
+            <Label Content="_Offset ( cm )" Target="{Binding ElementName=NumAlignmentOffset}" Margin="5"/>
             <xctk:DecimalUpDown Name="NumAlignmentOffset" Grid.Column="1" Margin="5 10"
                                         Value="{Binding AlignmentOffset, UpdateSourceTrigger=PropertyChanged}" Increment="0.1" InputScope="Number" DefaultValue="0.0" 
                                         Maximum="{Binding OffsetMax}" Minimum="{Binding OffsetMin}" 
                                         FormatString="F2" ClipValueToMinMax="True" 
                                         ToolTip="수직 정렬 기준 위치로 부터 거리&#x0a;양수는 아래, 음수는 위 방향"/>
         </Grid>
-        <!--Grid Grid.Row="9" Margin="5">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="3*"/>
-            </Grid.ColumnDefinitions>-->
-        <CheckBox Content="가사 슬라이드에 제목 포함" Grid.Row="10" Margin="5"/>
-        <!--Label Content="Title"/>
-            <TextBox Name="TxtSongTitle" Text="{Binding SongTitle}" Grid.Column="1" Height="36" FontSize="20"/-->
-        <!--/Grid-->
+        <CheckBox Content="가사 슬라이드에 제목 포함" Grid.Row="10" Margin="5" ToolTip="현재 미구현 기능입니다"/>
         <Grid Grid.Row="10" Grid.Column="1" HorizontalAlignment="Center">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
@@ -315,35 +304,36 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
             <Button Template="{DynamicResource ButtonTemplate1}" Name="BtnRefresh" Width="65"
-                                VerticalAlignment="Stretch" ToolTip="초기화" 
+                                VerticalAlignment="Stretch" ToolTip="초기화"
                                 Command="{Binding ResetCommand}">
                 <Image Source="\Resources\refresh-white.png" Width="32" Height="32"/>
             </Button>
             <Button Template="{DynamicResource ButtonTemplate1}" Name="BtnCopyClipboard" Grid.Column="1" Width="65"
                                 VerticalAlignment="Stretch" ToolTip="가사 슬라이드를 클립보드에 복사합니다&#x0a;복사한 슬라이드를 기존 PPT에 붙여넣을 수 있습니다"
-                                Command="{Binding CopySlideCommand}"            
-                    >Copy</Button>
+                                Content="_Copy"
+                                Command="{Binding CopySlideCommand}"/>
             <!--
             <Button Template="{DynamicResource ButtonTemplate1}" Name="BtnAddToSongList" Grid.Column="2" 
                                 Width="65" VerticalAlignment="Stretch" ToolTip="곡 목록에 추가"
                                 AutomationProperties.AccessKey="c" >Add</Button> -->
             <Button Template="{DynamicResource ButtonTemplate1}" Name="BtnPreview" Grid.Column="3" Width="65"
-                                VerticalAlignment="Stretch"  Content="Preview" Command="{Binding ChangePreviewStatusCommand}" />
+                                VerticalAlignment="Stretch"  Content="Pre_view" Command="{Binding ChangePreviewStatusCommand}" />
         </Grid>
         <Popup Name="PopPreview"  Placement="Right" VerticalOffset="400" StaysOpen="True" AllowsTransparency="True" IsOpen="{Binding PreviewPopupOpen}">
             <Grid>
                 <Rectangle Name="SlidePreview" 
                            Width="{Binding SlideWidth, Converter={StaticResource PreviewFrameSize}}"
                            Height="{Binding SlideHeight, Converter={StaticResource PreviewFrameSize}}" 
-                           Fill="{Binding ElementName=FontPreview,Path=Background}">
+                           Fill="{Binding ElementName=FontPreview,Path=Background}"
+                           ToolTip="텍스트 위치는 실제와 차이가 조금 있을 수 있습니다.&#x0a;클릭하면 닫습니다.">
                     <i:Interaction.Triggers>
                         <i:EventTrigger EventName="MouseDown">
                             <i:InvokeCommandAction Command="{Binding ChangePreviewStatusCommand}"/>
                         </i:EventTrigger>
                     </i:Interaction.Triggers>
                 </Rectangle>
-                <TextBox Name="SlidePreviewText" Width="{Binding ElementName=SlidePreview,Path=Width}"
-                                     Background="Transparent" BorderBrush="{x:Null}"
+                <TextBlock Name="SlidePreviewText" Width="{Binding ElementName=SlidePreview,Path=Width}"
+                                     Background="Transparent"
                                      Foreground="{Binding ElementName=FontPreview,Path=Foreground}" 
                                      FontFamily="{Binding ElementName=FontPreview, Path=FontFamily, TargetNullValue=굴림}"
                                      FontSize="{Binding ElementName=FontPreview, Path=FontSize, Converter={StaticResource PreviewContentSize}}"
@@ -352,19 +342,21 @@
                                      TextDecorations="{Binding ElementName=FontPreview,Path=TextDecorations}"
                                      TextAlignment="Center"
                                      VerticalAlignment="{Binding LyricsVAlignment, Converter={StaticResource LyricsVAlignmentConverter}}"
-                                     Text="{Binding ElementName=FontPreview,Path=Text}" Focusable="False">
-                    <TextBox.Padding>
+                                     LineHeight="21.165" LineStackingStrategy="BlockLineHeight"
+                                     ToolTip="텍스트 위치는 실제와 차이가 조금 있을 수 있습니다.&#x0a;클릭하면 닫습니다."
+                                     Text="{Binding LyricsboxText,Converter={StaticResource FirstParagraphConverter}}" Focusable="False">
+                    <TextBlock.Padding>
                         <MultiBinding Converter="{StaticResource AlignmentOffsetToPaddingConverter}" Mode="OneWay">
                             <Binding Path="LyricsVAlignment"/>
                             <Binding Path="AlignmentOffset"/>
                         </MultiBinding>
-                    </TextBox.Padding>
+                    </TextBlock.Padding>
                     <i:Interaction.Triggers>
                         <i:EventTrigger EventName="MouseDown">
                             <i:InvokeCommandAction Command="{Binding ChangePreviewStatusCommand}"/>
                         </i:EventTrigger>
                     </i:Interaction.Triggers>
-                </TextBox>
+                </TextBlock>
             </Grid>
         </Popup>
     </Grid>

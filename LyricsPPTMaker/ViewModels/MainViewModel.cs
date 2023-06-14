@@ -259,12 +259,6 @@ namespace LyricsPPTMaker.ViewModels
         }
 
         [RelayCommand]
-        public void LyricsLostFocus()
-        {
-            //LyricsboxText = SongList[CurrentSongListIndex].Lyrics;
-        }
-
-        [RelayCommand]
         public void CopySlide()
         {   
             PreviewPopupOpen = false;

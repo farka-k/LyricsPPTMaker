@@ -11,6 +11,10 @@ namespace LyricsPPTMaker
     public static class PresentationMaker
     {
         public static List<string> SplitLyrics(string lyrics){
+            if (!lyrics.Contains('\r'))
+            {
+                lyrics = lyrics.Replace("\n", "\r\n");
+            }
             lyrics = lyrics.Replace("\r\n\r\n", "\r\n \r\n");
             List<string> phrases = lyrics.Split("\r\n \r\n").ToList();
             return phrases;

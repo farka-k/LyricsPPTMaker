@@ -227,4 +227,23 @@ namespace LyricsPPTMaker
         }
     }
 
+    public class FirstParagraphConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (String.IsNullOrEmpty((string)value)) return String.Empty;
+            string lyrics=value as string;
+            if (!lyrics.Contains('\r'))
+            {
+                lyrics=lyrics.Replace("\n", "\r\n");
+            }
+            lyrics = lyrics.Replace("\r\n \r\n", "\r\n\r\n");
+            return lyrics.Split("\r\n\r\n")[0];
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotSupportedException();
+        }
+    }
 }
