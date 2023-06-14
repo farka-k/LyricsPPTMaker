@@ -5,18 +5,55 @@
     <TargetFramework>net6.0-windows</TargetFramework>
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
+    <Platforms>x86</Platforms>
+    <ApplicationIcon>Resources\icon_default_navy.ico</ApplicationIcon>
+    <Version>1.0.0-beta</Version>
+    <Authors>Farka</Authors>
+    <Company>Lazyworks</Company>
+    <RepositoryUrl>https://github.com/farka-k/LyricsPPTMaker</RepositoryUrl>
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Resources\bold-white.png" />
+    <None Remove="Resources\italic-white.png" />
+    <None Remove="Resources\LyricsUsageImage.png" />
+    <None Remove="Resources\refresh-white.png" />
+    <None Remove="Resources\search-white.png" />
+    <None Remove="Resources\underline-white.png" />
+    <None Remove="Resources\valign-bottom-white.png" />
+    <None Remove="Resources\valign-center-white.png" />
+    <None Remove="Resources\valign-top-white.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Resources\icon_default_navy.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\.editorconfig" Link=".editorconfig" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.0" />
+    <PackageReference Include="Extended.Wpf.Toolkit" Version="4.5.0" />
+    <PackageReference Include="HtmlAgilityPack" Version="1.11.46" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="7.0.0" />
     <PackageReference Include="Microsoft.Office.Interop.PowerPoint" Version="15.0.4420.1018" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.39" />
     <PackageReference Include="MicrosoftOfficeCore" Version="15.0.0" />
+    <PackageReference Include="System.Drawing.Common" Version="7.0.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="ViewModels\" />
+    <Resource Include="Resources\bold-white.png" />
+    <Resource Include="Resources\italic-white.png" />
+    <Resource Include="Resources\LyricsUsageImage.png" />
+    <Resource Include="Resources\refresh-white.png" />
+    <Resource Include="Resources\search-white.png" />
+    <Resource Include="Resources\underline-white.png" />
+    <Resource Include="Resources\valign-bottom-white.png" />
+    <Resource Include="Resources\valign-center-white.png" />
+    <Resource Include="Resources\valign-top-white.png" />
   </ItemGroup>
 
 </Project>

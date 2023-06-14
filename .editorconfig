@@ -1,0 +1,4 @@
+﻿[*.cs]
+
+# SYSLIB0014: 형식 또는 멤버는 사용되지 않습니다.
+dotnet_diagnostic.SYSLIB0014.severity = none

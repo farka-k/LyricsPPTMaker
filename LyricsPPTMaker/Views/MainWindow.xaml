@@ -3,10 +3,369 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+        xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
         xmlns:local="clr-namespace:LyricsPPTMaker"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
+        Title="{Binding Title}" Height="650" Width="600">
+    <Grid Background="{StaticResource DarkMode.Base.Background}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="3.9*"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="1.4*"/>
+            <RowDefinition Height="1.1*"/>
+            <RowDefinition Height="*"/>
 
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <Grid Grid.ColumnSpan="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="5*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <TextBox Name="TxtSearchBox" Height="36" Margin="5" FontSize="20"
+                                 Text="{Binding SearchboxText}">
+                <i:Interaction.Triggers>
+                    <i:EventTrigger EventName="GotFocus">
+                        <i:InvokeCommandAction Command="{Binding SearchboxGotFocusCommand}"/>
+                    </i:EventTrigger>
+                    <i:EventTrigger EventName="LostFocus">
+                        <i:InvokeCommandAction Command="{Binding SearchboxLostFocusCommand}"/>
+                    </i:EventTrigger>
+                </i:Interaction.Triggers>
+            </TextBox>
+            <Button Template="{DynamicResource ButtonTemplate1}" Name="BtnSearchLyric" Grid.Column="1" Margin="5"
+                                Command="{Binding SearchLyricsCommand}">
+                <Image Source="\Resources\search-white.png" Width="32" Height="32"/>
+            </Button>
+        </Grid>
+        <Grid Grid.Row="1" Grid.ColumnSpan="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="0.8*"/>
+                <ColumnDefinition Width="2*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="1.5*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="2*"/>
+            </Grid.ColumnDefinitions>
+            <Label Content="Title" Margin="5"/>
+            <TextBox Grid.Column="1" Margin="5,0" IsEnabled="False">
+                <TextBox.Text>
+                    <MultiBinding Converter="{StaticResource SongInfoItemConverter}" ConverterParameter="Title" Mode="OneWay">
+                        <Binding Path="SongList"/>
+                        <Binding ElementName="SongListBox" Path="SelectedIndex"/>
+                    </MultiBinding>
+                </TextBox.Text>
+            </TextBox>
+            <Label Content="Artist" Grid.Column="2" Margin="5"/>
+            <TextBox Grid.Column="3" Margin="5,0" IsEnabled="False">
+                <TextBox.Text>
+                    <MultiBinding Converter="{StaticResource SongInfoItemConverter}" ConverterParameter="Artist" Mode="OneWay">
+                        <Binding Path="SongList"/>
+                        <Binding ElementName="SongListBox" Path="SelectedIndex"/>
+                    </MultiBinding>
+                </TextBox.Text>
+            </TextBox>
+            <Label Content="Album" Grid.Column="4" Margin="5"/>
+            <TextBox Grid.Column="5" Margin="5,0" IsEnabled="False">
+                <TextBox.Text>
+                    <MultiBinding Converter="{StaticResource SongInfoItemConverter}" ConverterParameter="Album" Mode="OneWay">
+                        <Binding Path="SongList"/>
+                        <Binding ElementName="SongListBox" Path="SelectedIndex"/>
+                    </MultiBinding>
+                </TextBox.Text>
+            </TextBox>
+        </Grid>
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="3*"/>
+                <ColumnDefinition Width="15"/>
+                <ColumnDefinition Width="3*"/>
+                <ColumnDefinition Width="2*"/>
+                <ColumnDefinition Width="2*"/>
+            </Grid.ColumnDefinitions>
+
+            <TextBox Name="TxtCurrentLyricNumber" Grid.Column="0" Margin="5 0" IsEnabled="False"
+                     Text="{Binding CurrentSongListIndex, Mode=OneWay, Converter={StaticResource PositiveIntToStringConverter}, ConverterParameter=1}">
+                <i:Interaction.Triggers>
+                    <i:EventTrigger EventName="TextChanged">
+                        <i:InvokeCommandAction Command="{Binding SongListIndexChangedCommand}"/>
+                    </i:EventTrigger>
+                </i:Interaction.Triggers>
+            </TextBox>
+            <Label Content="/" Grid.Column="1" HorizontalContentAlignment="Center"/>
+            <TextBox Name="TxtTotalLyricCount" Grid.Column="2" Margin="5 0" IsEnabled="False"
+                     Text="{Binding TotalSongs, Mode=OneWay, Converter={StaticResource PositiveIntToStringConverter}, ConverterParameter=0}"/>
+            <Button Content="&lt;" Grid.Column="3" Margin="5 0" Command="{Binding GetPreviousSongInfoCommand}"/>
+            <Button Content="&gt;" Grid.Column="4" Margin="5 0" Command="{Binding GetNextSongInfoCommand}"/>
+        </Grid>
+        <ListBox Name="SongListBox" Grid.Row="2" Grid.Column="1" Background="Transparent" BorderThickness="0" ItemsSource="{Binding SongList}"
+                 VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Visibility="Collapsed" 
+                 SelectedIndex="{Binding CurrentSongListIndex}">
+            <ListBox.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <WrapPanel Orientation="Horizontal" Background="Transparent" HorizontalAlignment="Center"/>
+                </ItemsPanelTemplate>    
+            </ListBox.ItemsPanel>
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+        <TextBox Name="TxtLyrics" Grid.Row="3" Grid.ColumnSpan="2" Margin="5"
+                             TextWrapping="Wrap" AcceptsReturn="True"  AcceptsTab="True" VerticalScrollBarVisibility="Auto"
+                             VerticalAlignment="Stretch" Text="{Binding LyricsboxText}">
+            <i:Interaction.Triggers>
+                <i:EventTrigger EventName="LostFocus">
+                    <i:InvokeCommandAction Command="{Binding LyricsLostFocusCommand}"/>
+                </i:EventTrigger>
+            </i:Interaction.Triggers>
+        </TextBox>
+        <Button Name="BtnUsage" Grid.Row="3" Grid.Column="1" Content="?" Template="{DynamicResource ButtonTemplate1}" 
+                            FontSize="20" Width="30"
+                            HorizontalAlignment="Right" VerticalAlignment="Top" Margin="5" BorderBrush="White"
+                            >
+            <i:Interaction.Triggers>
+                <i:EventTrigger EventName="MouseEnter">
+                    <i:InvokeCommandAction Command="{Binding UsageMouseEnterCommand}"/>
+                </i:EventTrigger>
+                <i:EventTrigger EventName="MouseLeave">
+                    <i:InvokeCommandAction Command="{Binding UsageMouseLeaveCommand}"/>
+                </i:EventTrigger>
+            </i:Interaction.Triggers>
+        </Button>
+        <Popup Name="PopUsage" Placement="Mouse" IsOpen="{Binding UsagePopupOpen}">
+            <StackPanel>
+                <TextBlock Text="문단으로 슬라이드를 구분합니다" FontSize="15"/>
+                <Image Source="\Resources\LyricsUsageImage.png" Width="300"/>
+            </StackPanel>
+        </Popup>
+        <Grid Grid.Row="4">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Label Content="Preset" Margin="5"/>
+            <ComboBox Style="{DynamicResource ComboBoxStyle1}"  Grid.Column="1" VerticalAlignment="Center" Margin="3 0"></ComboBox>
+            <Button Content="Manage" Grid.Column="2" Margin="5"></Button>
+        </Grid>
+        <Grid Grid.Row="5" Grid.ColumnSpan="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="2*"/>
+                <ColumnDefinition Width="3*"/>
+                <ColumnDefinition Width="3*"/>
+            </Grid.ColumnDefinitions>
+            <Label Content="SlideSize" Margin="5"/>
+            <RadioButton GroupName="SlideSize" Content="WideScreen(16:9)" Grid.Column="1">
+                <RadioButton.IsChecked>
+                    <MultiBinding Converter="{StaticResource SlideSizeConverter}" ConverterParameter="WideScreen">
+                        <Binding Path="SizeType"/>
+                        <Binding Path="SlideWidth"/>
+                    </MultiBinding>
+                </RadioButton.IsChecked>
+            </RadioButton>
+            <RadioButton GroupName="SlideSize" Content="Normal(4:3)" Grid.Column="2">
+                <RadioButton.IsChecked>
+                    <MultiBinding Converter="{StaticResource SlideSizeConverter}" ConverterParameter="Normal">
+                        <Binding Path="SizeType"/>
+                        <Binding Path="SlideWidth"/>
+                    </MultiBinding>
+                </RadioButton.IsChecked>
+            </RadioButton>
+        </Grid>
+        <Grid Grid.Row="6">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Label Content="BackGround" Margin="5"/>
+            <xctk:ColorPicker Name="CmbBGColor" Grid.Column="1" Margin="5 10"
+                                Background="{StaticResource DarkMode.Control.Static.Background}" Foreground="Ivory"
+                                DropDownBackground="{StaticResource DarkMode.Control.Static.Background}"
+                                HeaderBackground="{StaticResource DarkMode.Control.Static.Background}" HeaderForeground="Ivory" 
+                                TabBackground="{StaticResource DarkMode.Control.Static.Background}" TabForeground="Ivory"
+                                          SelectedColor="{Binding BackgroundColor}"/>
+        </Grid>
+        <Grid Grid.Row="6" Grid.Column="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Label Content="FontColor" Margin="5"/>
+            <xctk:ColorPicker Name="CmbFontColor" Grid.Column="1" Margin="5 10"
+                                Background="{StaticResource DarkMode.Control.Static.Background}" Foreground="Ivory"
+                                DropDownBackground="{StaticResource DarkMode.Control.Static.Background}"
+                                HeaderBackground="{StaticResource DarkMode.Control.Static.Background}" HeaderForeground="Ivory" 
+                                TabBackground="{StaticResource DarkMode.Control.Static.Background}" TabForeground="Ivory"
+                                          SelectedColor="{Binding ForegroundColor}"/>
+
+        </Grid>
+        <Grid Grid.Row="7">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="3*"/>
+                <ColumnDefinition Width="6*"/>
+                <ColumnDefinition Width="2.5*"/>
+                <ColumnDefinition Width="3*"/>
+            </Grid.ColumnDefinitions>
+            <Label Content="Font" Margin="5"/>
+            <ComboBox Style="{DynamicResource ComboBoxStyle1}" Grid.Column="1" Name="CmbFontList" Margin="3 0"
+                                  ItemsSource="{Binding FontList, Mode=OneTime}" IsEditable="True" SelectedIndex="{Binding FontSelectedIndex}" />
+            <Label Grid.Column="2" Margin="2">Size</Label>
+            <xctk:UIntegerUpDown Name="NumFontSize" Grid.Column="3" Margin="0 10 5 10" Text="{Binding FontSize}"/>
+        </Grid>
+        <Grid Grid.Row="7" Grid.Column="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="3*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Label Content="Emphasis" Margin="5"/>
+            <CheckBox Template="{DynamicResource ImageCheckBoxTemplate}" Name="CheckBold" Grid.Column="1" Margin="5 5 0 5"
+                                  IsChecked="{Binding IsBold}">
+                <Image Source="\Resources\bold-white.png" Width="28" Height="28" Margin="2"/>
+            </CheckBox>
+            <CheckBox Template="{DynamicResource ImageCheckBoxTemplate}" Name="CheckItalic" Grid.Column="2" Margin="1 5 1 5" 
+                                  IsChecked="{Binding IsItalic}">
+                <Image Source="\Resources\italic-white.png" Width="28" Height="28" Margin="2"/>
+            </CheckBox>
+            <CheckBox Template="{DynamicResource ImageCheckBoxTemplate}" Name="CheckUnderline" Grid.Column="3" Margin="0 5 5 5"
+                                  IsChecked="{Binding IsUnderline}">
+                <Image Source="\Resources\underline-white.png" Width="28" Height="28" Margin="2"/>
+            </CheckBox>
+        </Grid>
+        <Grid Grid.Row="8" Grid.ColumnSpan="2">
+            <TextBox Name="FontPreview" FontFamily="{Binding ElementName=CmbFontList, Path=SelectedItem, TargetNullValue=굴림}" 
+                                 FontSize="{Binding ElementName=NumFontSize, Path=Text, TargetNullValue=40}"
+                                 Background="{Binding BackgroundColor}"
+                                 Foreground="{Binding ForegroundColor}"
+                                 FontWeight="{Binding IsBold,Converter={StaticResource BoolToFontWeight}}"
+                                 FontStyle="{Binding IsItalic,Converter={StaticResource BoolToFontStyle}}"
+                                 TextDecorations="{Binding IsUnderline,Converter={StaticResource BoolToTextDecoration}}"
+                                 VerticalAlignment="Stretch" TextAlignment="Center"
+                                     Text="{Binding FontPreviewText}" Margin="0,2,0,-2"/>
+        </Grid>
+        <Grid Grid.Row="9">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="3*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Label Content="Vertical&#x0a;Alignment" Margin="5 0"/>
+            <RadioButton Name="TitleVAlignTop" Template="{DynamicResource ToggleRadioButton}" 
+                                     GroupName="TitleVerticalAlignment"
+                                     Grid.Column="1" Margin="5 5 0 5"
+                         IsChecked="{Binding LyricsVAlignment, Converter={StaticResource EnumtoBooleanConverter}, ConverterParameter=Top}"
+                         Command="{Binding VAlignmentChangedCommand}">
+                <Image Source="\Resources\valign-top-white.png" Width="32" Height="32"/>
+            </RadioButton>
+            <RadioButton Name="TitleVAlignCenter" Template="{DynamicResource ToggleRadioButton}" 
+                                     GroupName="TitleVerticalAlignment" 
+                                     Grid.Column="2" Margin="1 5 1 5" 
+                         IsChecked="{Binding LyricsVAlignment, Converter={StaticResource EnumtoBooleanConverter}, ConverterParameter=Center}"
+                         Command="{Binding VAlignmentChangedCommand}">
+                <Image Source="\Resources\valign-center-white.png" Width="32" Height="32"/>
+            </RadioButton>
+            <RadioButton Name="TitleVAlignBottom" Template="{DynamicResource ToggleRadioButton}" 
+                                     GroupName="TitleVerticalAlignment" 
+                                     Grid.Column="3" Margin="0 5 5 5" 
+                         IsChecked="{Binding LyricsVAlignment, Converter={StaticResource EnumtoBooleanConverter}, ConverterParameter=Bottom}"
+                         Command="{Binding VAlignmentChangedCommand}">
+                <Image Source="\Resources\valign-bottom-white.png" Width="32" Height="32"/>
+            </RadioButton>
+        </Grid>
+        <Grid Grid.Row="9" Grid.Column="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Label Content="Offset ( cm )" Margin="5"/>
+            <xctk:DecimalUpDown Name="NumAlignmentOffset" Grid.Column="1" Margin="5 10"
+                                        Value="{Binding AlignmentOffset, UpdateSourceTrigger=PropertyChanged}" Increment="0.1" InputScope="Number" DefaultValue="0.0" 
+                                        Maximum="{Binding OffsetMax}" Minimum="{Binding OffsetMin}" 
+                                        FormatString="F2" ClipValueToMinMax="True" 
+                                        ToolTip="수직 정렬 기준 위치로 부터 거리&#x0a;양수는 아래, 음수는 위 방향"/>
+        </Grid>
+        <!--Grid Grid.Row="9" Margin="5">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="3*"/>
+            </Grid.ColumnDefinitions>-->
+        <CheckBox Content="가사 슬라이드에 제목 포함" Grid.Row="10" Margin="5"/>
+        <!--Label Content="Title"/>
+            <TextBox Name="TxtSongTitle" Text="{Binding SongTitle}" Grid.Column="1" Height="36" FontSize="20"/-->
+        <!--/Grid-->
+        <Grid Grid.Row="10" Grid.Column="1" HorizontalAlignment="Center">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Button Template="{DynamicResource ButtonTemplate1}" Name="BtnRefresh" Width="65"
+                                VerticalAlignment="Stretch" ToolTip="초기화" 
+                                Command="{Binding ResetCommand}">
+                <Image Source="\Resources\refresh-white.png" Width="32" Height="32"/>
+            </Button>
+            <Button Template="{DynamicResource ButtonTemplate1}" Name="BtnCopyClipboard" Grid.Column="1" Width="65"
+                                VerticalAlignment="Stretch" ToolTip="가사 슬라이드를 클립보드에 복사합니다&#x0a;복사한 슬라이드를 기존 PPT에 붙여넣을 수 있습니다"
+                                Command="{Binding CopySlideCommand}"            
+                    >Copy</Button>
+            <!--
+            <Button Template="{DynamicResource ButtonTemplate1}" Name="BtnAddToSongList" Grid.Column="2" 
+                                Width="65" VerticalAlignment="Stretch" ToolTip="곡 목록에 추가"
+                                AutomationProperties.AccessKey="c" >Add</Button> -->
+            <Button Template="{DynamicResource ButtonTemplate1}" Name="BtnPreview" Grid.Column="3" Width="65"
+                                VerticalAlignment="Stretch"  Content="Preview" Command="{Binding ChangePreviewStatusCommand}" />
+        </Grid>
+        <Popup Name="PopPreview"  Placement="Right" VerticalOffset="400" StaysOpen="True" AllowsTransparency="True" IsOpen="{Binding PreviewPopupOpen}">
+            <Grid>
+                <Rectangle Name="SlidePreview" 
+                           Width="{Binding SlideWidth, Converter={StaticResource PreviewFrameSize}}"
+                           Height="{Binding SlideHeight, Converter={StaticResource PreviewFrameSize}}" 
+                           Fill="{Binding ElementName=FontPreview,Path=Background}">
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="MouseDown">
+                            <i:InvokeCommandAction Command="{Binding ChangePreviewStatusCommand}"/>
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+                </Rectangle>
+                <TextBox Name="SlidePreviewText" Width="{Binding ElementName=SlidePreview,Path=Width}"
+                                     Background="Transparent" BorderBrush="{x:Null}"
+                                     Foreground="{Binding ElementName=FontPreview,Path=Foreground}" 
+                                     FontFamily="{Binding ElementName=FontPreview, Path=FontFamily, TargetNullValue=굴림}"
+                                     FontSize="{Binding ElementName=FontPreview, Path=FontSize, Converter={StaticResource PreviewContentSize}}"
+                                     FontWeight="{Binding ElementName=FontPreview, Path=FontWeight}"
+                                     FontStyle="{Binding ElementName=FontPreview,Path=FontStyle}"
+                                     TextDecorations="{Binding ElementName=FontPreview,Path=TextDecorations}"
+                                     TextAlignment="Center"
+                                     VerticalAlignment="{Binding LyricsVAlignment, Converter={StaticResource LyricsVAlignmentConverter}}"
+                                     Text="{Binding ElementName=FontPreview,Path=Text}" Focusable="False">
+                    <TextBox.Padding>
+                        <MultiBinding Converter="{StaticResource AlignmentOffsetToPaddingConverter}" Mode="OneWay">
+                            <Binding Path="LyricsVAlignment"/>
+                            <Binding Path="AlignmentOffset"/>
+                        </MultiBinding>
+                    </TextBox.Padding>
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="MouseDown">
+                            <i:InvokeCommandAction Command="{Binding ChangePreviewStatusCommand}"/>
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+                </TextBox>
+            </Grid>
+        </Popup>
     </Grid>
 </Window>
