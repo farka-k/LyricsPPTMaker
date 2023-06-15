@@ -7,7 +7,7 @@
     <UseWPF>true</UseWPF>
     <Platforms>x86</Platforms>
     <ApplicationIcon>Resources\song_lyrics_icon_default.ico</ApplicationIcon>
-    <Version>1.0.1-beta</Version>
+    <Version>1.0.2-beta</Version>
     <Authors>Farka</Authors>
     <Company>Lazyworks</Company>
     <RepositoryUrl>https://github.com/farka-k/LyricsPPTMaker</RepositoryUrl>

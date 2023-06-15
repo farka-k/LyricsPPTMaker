@@ -26,11 +26,16 @@ namespace LyricsPPTMaker
                 artist = artistColumn.SelectSingleNode("a").InnerText.Trim();
             else
                 artist = artistColumn.InnerText.Trim();
-            albumTitle = infoTable.SelectSingleNode("tbody/tr[th='앨범']/td/a").InnerText;
+            var albumInfo = infoTable.SelectSingleNode("tbody/tr[th='앨범']/td/a");
+            if (albumInfo!=null)
+                albumTitle = albumInfo.InnerText;
 
             var lyricsSection = article.SelectSingleNode("section[@class='sectionPadding contents lyrics']");
             var lyricsContainer = lyricsSection.SelectSingleNode("div/div[@class='lyricsContainer']");
-            fullLyrics = lyricsContainer.SelectSingleNode("p/xmp").InnerText;
+            var lyrcisOuter = lyricsContainer.SelectSingleNode("p/xmp");
+            if (lyrcisOuter != null)
+                fullLyrics = lyrcisOuter.InnerText;
+            else fullLyrics = "가사가 없습니다";
             SongInfo songInfo = new SongInfo(songTitle, artist, albumTitle, fullLyrics);
             return songInfo;
         }
