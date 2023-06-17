@@ -12,6 +12,8 @@ using System.Net;
 using Microsoft.Office.Core;
 using System.Globalization;
 using System.Collections.ObjectModel;
+using System.Text;
+using System.Text.RegularExpressions;
 using System.Linq;
 
 namespace LyricsPPTMaker.ViewModels
@@ -21,45 +23,41 @@ namespace LyricsPPTMaker.ViewModels
         public MainViewModel()
         {
             Title = "LyricsPPT Maker";
-
-            searchboxText = "제목을 입력하세요";
             usagePopupOpen = false;
             songList = new ObservableCollection<SongInfo>();
             currentSongListIndex = -1;
             currentSelectedSong = null;
             totalSongs = 0;
-            backgroundColor = "#FF100010";
-            foregroundColor = "#FFFFFFFF";
-            fontSelectedIndex = 0;
-
-            sizeType = SlideSizeType.WideScreen;
-            slideWidth = Constants.SlideSize16x9Width;
-            slideHeight = Constants.SlideSizeHeight;
             GetFontFamilies();
-            fontSize = 40;
-            isBold = false;
-            isItalic = false;
-            isUnderline = false;
+            presetList = new ObservableCollection<Preset>();
+            InitPreset();
+            currentSelectedPresetIndex = -1;
+            newPresetDialogOpen = false;
+            presetNameDialogOpen = false;
+            presetManagerOpen = false;
+            presetRenameDialogOpen = false;
+            newPresetDialogResult = PresetDialogResult.None;
+            presetGenMethod = PresetGenerationMethod.None;
+            selectedPresetManagerIndex = -1;
+            newPresetName = String.Empty;
+            isDuplicated = false;
+            isEmptyOrWhiteSpace = false;
             fontPreviewText = "AaBbCc가나다라1234";
-
-            lyricsVAlignment = LyricsVAlignmentType.Top;
-            alignmentOffset = 0.00f;
-            offsetMin = 0;
-            offsetMax = (decimal?)(Constants.SlideSizeHeight / 2
-                - (Utils.PointToCM(fontSize) + Constants.VerticalMargin * 2 + 0.56));
-
-            includeTitleMark = false;
-            previewTextPadding = new Thickness(0, Utils.CMToPixel(alignmentOffset.Value + 0.7) / 4, 0, 0);
+            previewPopupOpen = false;
+            InitInputs();
+            isSearchboxTextFocus = true;
         }
 
+        #region ViewModel Property
+        #region LyricsSearch
         [ObservableProperty]
         private string? searchboxText;
+        [ObservableProperty]
+        private bool isSearchboxTextFocus;
         [ObservableProperty]
         private ObservableCollection<SongInfo> songList;
         [ObservableProperty]
         private int currentSongListIndex;
-        //[ObservableProperty]
-        //private bool? listBoxIsSelected;
         [ObservableProperty]
         private object? currentSelectedSong;
 
@@ -69,7 +67,41 @@ namespace LyricsPPTMaker.ViewModels
         private string? lyricsboxText;
         [ObservableProperty]
         private bool usagePopupOpen;
+        #endregion LyricsSearch
 
+        #region Preset
+        private PresetXMLSerializer PresetSerializer;
+        [ObservableProperty]
+        private ObservableCollection<Preset> presetList;
+        [ObservableProperty]
+        private int currentSelectedPresetIndex;
+        
+        [ObservableProperty]
+        private bool newPresetDialogOpen;
+        [ObservableProperty]
+        private bool presetNameDialogOpen;
+        [ObservableProperty]
+        private bool presetManagerOpen;
+        [ObservableProperty]
+        private bool presetRenameDialogOpen;
+        [ObservableProperty]
+        private PresetDialogResult newPresetDialogResult;
+        [ObservableProperty]
+        private PresetGenerationMethod presetGenMethod;
+        [ObservableProperty]
+        private string newPresetName;
+        [ObservableProperty]
+        private bool isNewPresetNameFocus;
+
+        [ObservableProperty]
+        private int selectedPresetManagerIndex;
+        [ObservableProperty]
+        private bool isDuplicated;
+        [ObservableProperty]
+        private bool isEmptyOrWhiteSpace;
+        #endregion Preset
+
+        #region SlideOptions
         [ObservableProperty]
         private SlideSizeType sizeType;
         [ObservableProperty]
@@ -105,14 +137,20 @@ namespace LyricsPPTMaker.ViewModels
         private decimal? offsetMin;
         [ObservableProperty]
         private decimal? offsetMax;
-        [ObservableProperty]
-        private bool includeTitleMark;
+        #endregion SlideOptions
 
+        #region Preview
         [ObservableProperty]
         private bool previewPopupOpen = false;
         [ObservableProperty]
         private Thickness previewTextPadding;
+        #endregion Preview
 
+        #endregion ViewModel Property
+
+        /// <summary>
+        /// Load System Installed Fonts.
+        /// </summary>
         private void GetFontFamilies()
         {
             FontList = new List<string>();
@@ -126,6 +164,54 @@ namespace LyricsPPTMaker.ViewModels
             FontList.Sort();
         }
 
+        /// <summary>
+        /// Set initial values to user input components.
+        /// </summary>
+        private void InitInputs()
+        {
+            SizeType = SlideSizeType.WideScreen;
+            SlideWidth = Constants.SlideSize16x9Width;
+            SlideHeight = Constants.SlideSizeHeight;
+            BackgroundColor = "#FF100010";
+            ForegroundColor = "#FFFFFFFF";
+            FontSelectedIndex = 0;
+            FontSize = 40;
+            IsBold = false;
+            IsItalic = false;
+            IsUnderline = false;
+
+            LyricsVAlignment = LyricsVAlignmentType.Top;
+            AlignmentOffset = 0.00f;
+            OffsetMin = 0;
+            OffsetMax = (decimal?)(Constants.SlideSizeHeight / 2
+                - (Utils.PointToCM(FontSize) + Constants.VerticalMargin * 2 + 0.56));
+
+            PreviewTextPadding = new Thickness(0, Utils.CMToPixel(AlignmentOffset.Value + 0.7) / 4, 0, 0);
+        }
+
+        /// <summary>
+        /// Load Preset from Xml File. Generate new one if not exists.
+        /// </summary>
+        private void InitPreset()
+        {
+            PresetSerializer = new PresetXMLSerializer();
+            if (!File.Exists(AppDomain.CurrentDomain.BaseDirectory + @"\Presets.xml"))
+            {
+                PresetSerializer.SetPresetList(PresetList);
+                PresetSerializer.Serialize();
+                return;
+            }
+            PresetList=PresetSerializer.Deserialize(AppDomain.CurrentDomain.BaseDirectory+@"Presets.xml");
+        }
+
+        private void UpdatePresetFile()
+        {
+            PresetSerializer.Serialize();
+        }
+
+        /// <summary>
+        /// Search lyrics.
+        /// </summary>
         [RelayCommand]
         public void SearchLyrics()
         {
@@ -178,6 +264,9 @@ namespace LyricsPPTMaker.ViewModels
             PreviewPopupOpen = true;
         }
 
+        /// <summary>
+        /// Make disappear of guide message in search box.
+        /// </summary>
         [RelayCommand]
         public void SearchboxGotFocus()
         {
@@ -187,45 +276,57 @@ namespace LyricsPPTMaker.ViewModels
             }
         }
 
+        /// <summary>
+        /// Show guide message in search box when string is empty or white spaces.
+        /// </summary>
         [RelayCommand]
         public void SearchboxLostFocus()
         {
-            if (SearchboxText == "")
+            if (String.IsNullOrWhiteSpace(SearchboxText))
             {
                 SearchboxText = "제목을 입력하세요";
             }
         }
 
+        /// <summary>
+        /// Show Usage Popup if mouse is over the button.
+        /// </summary>
         [RelayCommand]
         public void UsageMouseEnter()
         {
             UsagePopupOpen = true;
         }
 
+        /// <summary>
+        /// Hide Usage Popup if mouse leave the button.
+        /// </summary>
         [RelayCommand]
         public void UsageMouseLeave()
         {
             UsagePopupOpen = false;
         }
 
-        [RelayCommand]
-        public void ChangePreviewStatus()
-        {
-            PreviewPopupOpen = !PreviewPopupOpen;
-        }
-
+        /// <summary>
+        /// Get previous song.
+        /// </summary>
         [RelayCommand]
         public void GetPreviousSongInfo()
         {
             CurrentSongListIndex = (CurrentSongListIndex - 1 >= 0) ? CurrentSongListIndex - 1 : SongList.Count - 1;
         }
 
+        /// <summary>
+        /// Get next song.
+        /// </summary>
         [RelayCommand]
         public void GetNextSongInfo()
         {
             CurrentSongListIndex = (CurrentSongListIndex + 1 < SongList.Count) ? CurrentSongListIndex + 1 : 0;
         }
 
+        /// <summary>
+        /// Change Offset range when VerticalAlignment is changed.
+        /// </summary>
         [RelayCommand]
         public void VAlignmentChanged()
         {
@@ -250,6 +351,9 @@ namespace LyricsPPTMaker.ViewModels
             }
         }
 
+        /// <summary>
+        /// Set current song's lyric to lyric textbox.
+        /// </summary>
         [RelayCommand]
         public void SongListIndexChanged()
         {
@@ -259,45 +363,412 @@ namespace LyricsPPTMaker.ViewModels
         }
 
         [RelayCommand]
+        public void OpenNewPresetDialog()
+        {
+            InitDialog();
+        }
+
+        /// <summary>
+        /// Close NewPresetDialog without any change.
+        /// </summary>
+        [RelayCommand]
+        public void CloseNewPresetDialog()
+        {
+            NewPresetDialogResult = PresetDialogResult.Cancel;
+            NewPresetDialogOpen = false;
+        }
+
+        /// <summary>
+        /// Close PresetNameDialog without any change.
+        /// </summary>
+        [RelayCommand]
+        public void ClosePresetNameDialog()
+        {
+            NewPresetName = String.Empty;
+            PresetNameDialogOpen = false;
+            IsNewPresetNameFocus = false;
+        }
+
+        /// <summary>
+        /// Show Preset Manager Window
+        /// </summary>
+        [RelayCommand]
+        public void OpenPresetManager()
+        {
+            PresetManagerOpen = true;
+        }
+
+        /// <summary>
+        /// Close Preset Manager Window.
+        /// </summary>
+        [RelayCommand]
+        public void ClosePresetManager()
+        {
+            PresetManagerOpen = false;
+        }
+
+        /// <summary>
+        /// Add Preset with default name and options. This function only execute in the PresetManager.
+        /// </summary>
+        [RelayCommand]
+        public void AddDefaultPreset()
+        {
+            PresetList.Add(new Preset(GenerateDefaultPresetName(), new LyricSlideOptions()));
+            UpdatePresetFile();
+        }
+
+        /// <summary>
+        /// Generate default preset name.
+        /// </summary>
+        private string GenerateDefaultPresetName()
+        {
+            List<string> presetNameMatchedList = new List<string>();
+            Regex rxName = new Regex(@"^Preset [\d]+$");
+            Regex rxNumber = new Regex(@"[\d]+");
+            string name;
+            foreach (var preset in PresetList)
+            {
+                if (rxName.IsMatch(preset.Name))
+                    presetNameMatchedList.Add(preset.Name);
+            }
+            if (presetNameMatchedList.Count > 0)
+            {
+                presetNameMatchedList.Sort();
+                int number = int.Parse(rxNumber.Match(presetNameMatchedList.Last()).Value) + 1;
+                name = rxNumber.Replace(presetNameMatchedList.Last(), number.ToString());
+            }
+            else name = "Preset 1";
+            return name;
+        }
+
+        /// <summary>
+        /// Copy selected Preset. This function only execute in the PresetManager.
+        /// </summary>
+        [RelayCommand]
+        public void CopySelectedPreset()
+        {
+            if (SelectedPresetManagerIndex < 0) return;
+            Preset original = PresetList[SelectedPresetManagerIndex];
+            string name = original.Name + "_Copy";
+            PresetList.Insert(SelectedPresetManagerIndex + 1, 
+                new Preset(name, new LyricSlideOptions(original.Options)));
+            UpdatePresetFile();
+        }
+
+
+        [RelayCommand]
+        public void RenameSelectedPreset()
+        {
+            if (SelectedPresetManagerIndex < 0) return;
+            NewPresetName = PresetList[SelectedPresetManagerIndex].Name;
+            IsDuplicated = false;
+            IsEmptyOrWhiteSpace = false;
+            PresetRenameDialogOpen = true;
+            IsNewPresetNameFocus = true;
+        }
+
+        [RelayCommand]
+        public void CloseRenameDialog()
+        {
+            PresetRenameDialogOpen = false;
+            IsNewPresetNameFocus = false;
+        }
+
+        [RelayCommand]
+        public void UpdatePresetName()
+        {
+            if (IsDuplicated || IsEmptyOrWhiteSpace) return;
+            if (PresetList[SelectedPresetManagerIndex].Name == NewPresetName)
+            {
+                CloseRenameDialog();
+                return;
+            }
+            int index = SelectedPresetManagerIndex;
+            var options = new LyricSlideOptions(PresetList[index].Options);
+            PresetList.Insert(index+1, new Preset(NewPresetName, options));
+            PresetList.RemoveAt(index);
+            SelectedPresetManagerIndex = index;
+            PresetRenameDialogOpen = false;
+            IsNewPresetNameFocus = false;
+            UpdatePresetFile();
+        }
+
+        [RelayCommand]
+        public void ValidatePresetName(object param)
+        {
+            string name = (string)param;
+            IsDuplicated = IsDuplicatedName(name, SelectedPresetManagerIndex);
+            IsEmptyOrWhiteSpace = String.IsNullOrWhiteSpace(name);
+            return;
+        }
+
+        /// <summary>
+        /// Delete selected Preset. This function only execute in the PresetManager.
+        /// </summary>
+        [RelayCommand]
+        public void DeleteSelectedPreset()
+        {
+            if (SelectedPresetManagerIndex < 0) return;
+            int index = SelectedPresetManagerIndex;
+            PresetList.RemoveAt(index);
+            if (index >= PresetList.Count)  //delete last item
+                SelectedPresetManagerIndex = index - 1;
+            else SelectedPresetManagerIndex = index;
+            UpdatePresetFile();
+        }
+
+        [RelayCommand]
+        public void ItemOrderUp()
+        {
+            MoveItem(PresetList, -1);
+
+        }
+
+        [RelayCommand]
+        public void ItemOrderDown()
+        {
+            MoveItem(PresetList, 1);
+        }
+
+        private void MoveItem(ObservableCollection<Preset> list,int direction)
+        {
+            if (SelectedPresetManagerIndex < 0) 
+                return;     //No Selected Item
+            int newIdx = SelectedPresetManagerIndex + direction;
+            if (newIdx < 0 || newIdx>=list.Count)
+                return;     //Index Out of Range
+            var selectedItem = list[SelectedPresetManagerIndex];
+            list.Remove(selectedItem);
+            list.Insert(newIdx, selectedItem);
+            SelectedPresetManagerIndex = newIdx;
+            UpdatePresetFile();
+        }
+
+        private void InitDialog()
+        {
+            NewPresetDialogResult = PresetDialogResult.None;
+            PresetGenMethod = PresetGenerationMethod.None;
+            NewPresetName = string.Empty;
+            NewPresetDialogOpen = true;
+            
+        }
+
+        [RelayCommand]
+        public void SetGenerationMethod(string param)
+        {
+            if (param == "Copy")
+            {
+                PresetGenMethod = PresetGenerationMethod.CopyFromCurrent;
+
+            }
+            else //param=="Default"
+            {
+                PresetGenMethod = PresetGenerationMethod.Default;
+
+            }
+            NewPresetDialogResult = PresetDialogResult.Selected;
+            NewPresetDialogOpen = false;
+            PresetNameDialogOpen = true;
+            IsNewPresetNameFocus = true;
+        }
+
+        private LyricSlideOptions GetSlideOptionsFromCurrentSetting
+            () => new LyricSlideOptions()
+            {
+                SizeType = SizeType,
+                SlideWidth = SlideWidth,
+                SlideHeight = SlideHeight,
+                BackgroundColor = GetColorInteger(BackgroundColor),
+                FontColor = GetColorInteger(ForegroundColor),
+                FontName = FontList[FontSelectedIndex],
+                FontSize = FontSize,
+                Emphasis = GetTextEmphasis(IsBold, IsItalic, IsUnderline),
+                VerticalAlignment = GetMsVAnchor(LyricsVAlignment),
+                Offset = AlignmentOffset.Value
+            };
+
+        [RelayCommand]
+        public void AddNewPreset()
+        {
+            if (IsDuplicatedName(NewPresetName, CurrentSelectedPresetIndex))
+            {
+                MessageBox.Show("중복된 이름입니다.", "Error: DuplicatedName", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+            if (String.IsNullOrWhiteSpace(NewPresetName))
+            {
+                MessageBox.Show("빈 문자열이나 공백으로 이름지을 수 없습니다.", "Error: EmptyString", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+            Preset newPreset;
+            if (PresetGenMethod == PresetGenerationMethod.CopyFromCurrent)
+            {
+                newPreset = new Preset(
+                    NewPresetName,
+                    GetSlideOptionsFromCurrentSetting()
+                );
+            }
+            else
+            {
+                newPreset = new Preset(
+                    NewPresetName,
+                    new LyricSlideOptions()
+                );
+            }
+            PresetList.Add(newPreset);
+            CurrentSelectedPresetIndex = PresetList.Count - 1;
+            PresetNameDialogOpen = false;
+            IsNewPresetNameFocus = false;
+            UpdatePresetFile();
+        }
+
+        [RelayCommand]
+        public void UpdateInputs()
+        {
+            SelectedPresetManagerIndex = CurrentSelectedPresetIndex;
+
+            if (CurrentSelectedPresetIndex == -1)
+            {
+                InitInputs();
+            }
+            else
+            {
+                var currentPresetItem = PresetList[CurrentSelectedPresetIndex];
+                var currentPreset = currentPresetItem.Options;
+
+                SizeType = currentPreset.SizeType;
+                SlideWidth = currentPreset.SlideWidth;
+                SlideHeight = currentPreset.SlideHeight;
+                BackgroundColor = GetColorString(currentPreset.BackgroundColor);
+                ForegroundColor = GetColorString(currentPreset.FontColor);
+                FontSelectedIndex = FontList.IndexOf(currentPreset.FontName);
+                FontSize = currentPreset.FontSize;
+                SetEmphasis(currentPreset.Emphasis);
+                LyricsVAlignment = GetLyricVAlignment(currentPreset.VerticalAlignment);
+                AlignmentOffset = currentPreset.Offset;
+                /*OffsetMin = 0;
+                OffsetMax = (decimal?)(Constants.SlideSizeHeight / 2
+                    - (Utils.PointToCM(FontSize) + Constants.VerticalMargin * 2 + 0.56));*/
+
+                PreviewTextPadding = new Thickness(0, Utils.CMToPixel(AlignmentOffset.Value + 0.7) / 4, 0, 0);
+
+            }
+        }
+
+        private MsoVerticalAnchor GetMsVAnchor(LyricsVAlignmentType lVAlign)
+        {
+            MsoVerticalAnchor MsVAnchor;
+            if (lVAlign == LyricsVAlignmentType.Top)
+                MsVAnchor = MsoVerticalAnchor.msoAnchorTop;
+            else if (lVAlign == LyricsVAlignmentType.Center)
+                MsVAnchor = MsoVerticalAnchor.msoAnchorMiddle;
+            else
+                MsVAnchor = MsoVerticalAnchor.msoAnchorBottom;
+            return MsVAnchor;
+        }
+
+        private LyricsVAlignmentType GetLyricVAlignment(MsoVerticalAnchor msVAnchor)
+        {
+            LyricsVAlignmentType LVAlign;
+            if (msVAnchor == MsoVerticalAnchor.msoAnchorTop)
+                LVAlign = LyricsVAlignmentType.Top;
+            else if (msVAnchor == MsoVerticalAnchor.msoAnchorMiddle)
+                LVAlign = LyricsVAlignmentType.Center;
+            else
+                LVAlign = LyricsVAlignmentType.Bottom;
+            return LVAlign;
+        }
+
+        private TextEmphasis GetTextEmphasis(bool bold, bool italic, bool underline)
+        {
+            TextEmphasis emphasis = TextEmphasis.None;
+            if (bold == true)
+            {
+                emphasis |= TextEmphasis.Bold;
+            }
+            if (italic == true)
+            {
+                emphasis |= TextEmphasis.Italic;
+            }
+            if (underline == true)
+            {
+                emphasis |= TextEmphasis.UnderLine;
+            }
+            return emphasis;
+        }
+
+        private void SetEmphasis(TextEmphasis emphasis)
+        {
+            IsBold = ((emphasis & TextEmphasis.Bold) == TextEmphasis.Bold);
+            IsItalic = ((emphasis & TextEmphasis.Italic) == TextEmphasis.Italic);
+            IsUnderline = ((emphasis & TextEmphasis.UnderLine) == TextEmphasis.UnderLine);
+        }
+
+        private int GetColorInteger
+            (string color) => int.Parse(color.Remove(0, 3), NumberStyles.HexNumber);
+
+        private string GetColorString
+            (int color) => "#FF" + Convert.ToString(color, 16);
+       
+        private bool IsDuplicatedName(string target, int index)
+        {
+            bool isDuplicated = false;
+            for(int i=0; i < PresetList.Count; i++)
+            {
+                if (i == index) continue;
+                if (target == PresetList[i].Name)
+                {
+                    isDuplicated = true;
+                    break;
+                }
+            }
+            
+            return isDuplicated;
+        }
+
+        [RelayCommand]
+        public void SavePreset()
+        {
+            if (CurrentSelectedPresetIndex == -1)
+            {
+                NewPresetDialogResult = PresetDialogResult.Selected;
+                PresetGenMethod = PresetGenerationMethod.CopyFromCurrent;
+                NewPresetName = string.Empty;
+                PresetNameDialogOpen = true;
+            }
+            else
+            {
+                StringBuilder sb = new StringBuilder();
+                sb.Append("현재 설정을 ");
+                sb.Append(PresetList[CurrentSelectedPresetIndex].Name);
+                sb.Append("에 저장합니다.");
+                if (MessageBox.Show(sb.ToString(), "Save Preset", MessageBoxButton.OKCancel, MessageBoxImage.Information) == MessageBoxResult.OK)
+                {
+                    PresetList[CurrentSelectedPresetIndex].Options.CopyProperty(GetSlideOptionsFromCurrentSetting());
+                    UpdatePresetFile();
+                }
+                else return;
+            }
+        }
+
+        [RelayCommand]
         public void CopySlide()
         {   
             PreviewPopupOpen = false;
             var phrases = PresentationMaker.SplitLyrics(LyricsboxText);
-            TextEmphasis emphasis = TextEmphasis.None;
-            if (IsBold == true)
-            {
-                emphasis |= TextEmphasis.Bold;
-            }
-            if (IsItalic == true)
-            {
-                emphasis |= TextEmphasis.Italic;
-            }
-            if (IsUnderline == true)
-            {
-                emphasis |= TextEmphasis.UnderLine;
-            }
-
-            MsoVerticalAnchor vAlignment;
-            if (LyricsVAlignment == LyricsVAlignmentType.Top)
-                vAlignment = MsoVerticalAnchor.msoAnchorTop;
-            else if (LyricsVAlignment == LyricsVAlignmentType.Center)
-                vAlignment = MsoVerticalAnchor.msoAnchorMiddle;
-            else
-                vAlignment = MsoVerticalAnchor.msoAnchorBottom;
-
 
             var options = new LyricSlideOptions
             {
                 SizeType = SizeType,
                 SlideWidth = SlideWidth,
                 SlideHeight = SlideHeight,
-                BackgroundColor = int.Parse(BackgroundColor.Remove(0, 3), NumberStyles.HexNumber),
-                FontColor = int.Parse(ForegroundColor.Remove(0, 3), NumberStyles.HexNumber),
-                Emphasis = emphasis,
+                BackgroundColor = GetColorInteger(BackgroundColor),
+                FontColor = GetColorInteger(ForegroundColor),
+                Emphasis = GetTextEmphasis(IsBold,IsItalic,IsUnderline),
                 FontName = FontList[FontSelectedIndex],
                 FontSize = FontSize,
                 Offset = AlignmentOffset.Value,
-                VerticalAlignment = vAlignment
+                VerticalAlignment = GetMsVAnchor(LyricsVAlignment)
             };
             PresentationMaker.MakeLyricsSlides(phrases, options, true);
         }
@@ -305,31 +776,15 @@ namespace LyricsPPTMaker.ViewModels
         [RelayCommand]
         public void Reset()
         {
-            SearchboxText = "제목을 입력하세요";
-            UsagePopupOpen = false;
-            SongList.Clear();
-            CurrentSongListIndex = -1;
-            TotalSongs = 0;
-
-            SizeType = SlideSizeType.WideScreen;
-            SlideWidth = Constants.SlideSize16x9Width;
-            BackgroundColor = "#FF100010";
-            ForegroundColor = "#FFFFFFFF";
-            FontSelectedIndex = 0;
-            FontSize = 40;
-            IsBold = false;
-            IsItalic = false;
-            IsUnderline = false;
+            CurrentSelectedPresetIndex = -1;
             FontPreviewText = "AaBbCc가나다라1234";
-
-            LyricsVAlignment = LyricsVAlignmentType.Top;
-            AlignmentOffset = 0;
-            OffsetMin = 0;
-            OffsetMax = (decimal?)(Constants.SlideSizeHeight / 2
-                - (Utils.PointToCM(FontSize) + Constants.VerticalMargin * 2 + 0.56));
-            IncludeTitleMark = false;
             PreviewPopupOpen = false;
-            PreviewTextPadding = new Thickness(0, Utils.CMToPixel(AlignmentOffset.Value + 0.7) / 4, 0, 0);
+        }
+
+        [RelayCommand]
+        public void ChangePreviewStatus()
+        {
+            PreviewPopupOpen = !PreviewPopupOpen;
         }
     }
 }

@@ -6,9 +6,28 @@
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
         xmlns:local="clr-namespace:LyricsPPTMaker"
+        xmlns:vm="clr-namespace:LyricsPPTMaker.ViewModels"
         mc:Ignorable="d"
-        Title="{Binding Title}" Height="650" Width="600" Icon="..\Resources\song_lyrics_icon_title.ico">
+        Title="{Binding Title}" Name="LyricsPPTMaker" Height="650" Width="600" Icon="..\Resources\song_lyrics_icon_title.ico">
     <Grid Background="{StaticResource DarkMode.Base.Background}">
+        <Grid.Style>
+            <Style TargetType="Grid">
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding NewPresetDialogOpen}" Value="True">
+                        <Setter Property="Opacity" Value="0.5"/>
+                        <Setter Property="IsEnabled" Value="False"/>
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding PresetNameDialogOpen}" Value="True">
+                        <Setter Property="Opacity" Value="0.5"/>
+                        <Setter Property="IsEnabled" Value="False"/>
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding PresetManagerOpen}" Value="True">
+                        <Setter Property="Opacity" Value="0.5"/>
+                        <Setter Property="IsEnabled" Value="False"/>
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+        </Grid.Style>
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
             <RowDefinition Height="*"/>
@@ -42,10 +61,11 @@
                     <i:EventTrigger EventName="LostFocus">
                         <i:InvokeCommandAction Command="{Binding SearchboxLostFocusCommand}"/>
                     </i:EventTrigger>
-                    <i:KeyTrigger Key="Return">
-                        <i:InvokeCommandAction Command="{Binding SearchLyricsCommand}"/>
-                    </i:KeyTrigger>
                 </i:Interaction.Triggers>
+                <i:Interaction.Behaviors>
+                    <local:TextBoxBehavior EnterCommand="{Binding SearchLyricsCommand}"/>
+                    <local:TextBoxBehavior IsControlFocus="{Binding IsSearchboxTextFocus}"/>
+                </i:Interaction.Behaviors>
             </TextBox>
             <Button Template="{DynamicResource ButtonTemplate1}" Name="BtnSearchLyric" Grid.Column="1" Margin="5"
                                 Command="{Binding SearchLyricsCommand}" ToolTip="검색">
@@ -109,8 +129,10 @@
             <Label Content="/" Grid.Column="1" HorizontalContentAlignment="Center"/>
             <TextBox Name="TxtTotalLyricCount" Grid.Column="2" Margin="5 0" IsEnabled="False" ToolTip="총 검색 갯수"
                      Text="{Binding TotalSongs, Mode=OneWay, Converter={StaticResource PositiveIntToStringConverter}, ConverterParameter=0}"/>
-            <Button Content="_&lt;" Grid.Column="3" Margin="5 0" ToolTip="이전 곡" Command="{Binding GetPreviousSongInfoCommand}"/>
-            <Button Content="_&gt;" Grid.Column="4" Margin="5 0" ToolTip="다음 곡" Command="{Binding GetNextSongInfoCommand}"/>
+            <Button Content="_&lt;" Grid.Column="3" Margin="5 0" ToolTip="이전 곡" Command="{Binding GetPreviousSongInfoCommand}"
+                    Template="{DynamicResource ButtonTemplate1}"/>
+            <Button Content="_&gt;" Grid.Column="4" Margin="5 0" ToolTip="다음 곡" Command="{Binding GetNextSongInfoCommand}"
+                    Template="{DynamicResource ButtonTemplate1}"/>
         </Grid>
         <ListBox Name="SongListBox" Grid.Row="2" Grid.Column="1" Background="Transparent" BorderThickness="0" ItemsSource="{Binding SongList}"
                  VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Visibility="Collapsed" 
@@ -127,7 +149,8 @@
         </ListBox>
         <TextBox Name="TxtLyrics" Grid.Row="3" Grid.ColumnSpan="2" Margin="5"
                              TextWrapping="Wrap" AcceptsReturn="True"  AcceptsTab="True" VerticalScrollBarVisibility="Auto"
-                             VerticalAlignment="Stretch" Text="{Binding LyricsboxText, UpdateSourceTrigger=PropertyChanged}"/>
+                             VerticalAlignment="Stretch" Text="{Binding LyricsboxText, UpdateSourceTrigger=PropertyChanged}">
+        </TextBox>
         <Button Name="BtnUsage" Grid.Row="3" Grid.Column="1" Content="?" Template="{DynamicResource ButtonTemplate1}" 
                             FontSize="20" Width="30" Focusable="False"
                             HorizontalAlignment="Right" VerticalAlignment="Top" Margin="5" BorderBrush="White"
@@ -154,8 +177,173 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
             <Label Content="_Preset" Margin="5" Focusable="False"/>
-            <ComboBox Style="{DynamicResource ComboBoxStyle1}"  Grid.Column="1" VerticalAlignment="Center" Margin="3 0" ToolTip="현재 미구현 기능입니다"></ComboBox>
-            <Button Content="_Manage" Grid.Column="2" Margin="5" ToolTip="현재 미구현 기능입니다"></Button>
+            <ComboBox Style="{DynamicResource ComboBoxStyle1}" ItemsSource="{Binding PresetList}" DisplayMemberPath="Name" SelectedValuePath="Options"
+                      SelectedIndex="{Binding CurrentSelectedPresetIndex}"
+                      Grid.Column="1" Grid.ColumnSpan="2" VerticalAlignment="Center" Margin="3 0">
+                <i:Interaction.Triggers>
+                    <i:EventTrigger EventName="SelectionChanged">
+                        <i:InvokeCommandAction Command="{Binding UpdateInputsCommand}"/>
+                    </i:EventTrigger>
+                </i:Interaction.Triggers>
+            </ComboBox>
+        </Grid>
+        <Grid Grid.Row="4" Grid.Column="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Button Content="_New" Margin="5 0" Command="{Binding OpenNewPresetDialogCommand}"
+                    Template="{DynamicResource ButtonTemplate1}"/>
+            <Popup IsOpen="{Binding NewPresetDialogOpen}" Height="100" Width="300" Placement="Center" AllowsTransparency="True" StaysOpen="False">
+                <Border Background="{StaticResource DarkMode.Base.Background}" BorderBrush="Black" BorderThickness="2" CornerRadius="2,2,2,2">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="0.7*"/>
+                        </Grid.RowDefinitions>
+                        <TextBlock Text="프리셋 생성 방식을 선택하세요" FontSize="18"/>
+                        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center">
+                            <Button Content="현재 프리셋 복사" Command="{Binding SetGenerationMethodCommand}" CommandParameter="Copy" 
+                                    Template="{DynamicResource ButtonTemplate1}" Padding="5" Margin="2 0" />
+                            <Button Content="기본값" Command="{Binding SetGenerationMethodCommand}" CommandParameter="Default"
+                                    Template="{DynamicResource ButtonTemplate1}" Padding="5" Margin="2 0"/>
+                            <Button Content="취소" Command="{Binding CloseNewPresetDialogCommand}"
+                                    Template="{DynamicResource ButtonTemplate1}" Padding="5" Margin="2 0"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+                <i:Interaction.Triggers>
+                    <i:KeyTrigger Key="Esc">
+                        <i:InvokeCommandAction Command="{Binding CloseNewPresetDialogCommand}"/>
+                    </i:KeyTrigger>
+                </i:Interaction.Triggers>
+            </Popup>
+            <Popup IsOpen="{Binding PresetNameDialogOpen}" Height="100" Width="300" Placement="Center" 
+                   AllowsTransparency="True" StaysOpen="False">
+                <Border Background="{StaticResource DarkMode.Base.Background}" BorderBrush="Black" BorderThickness="2" CornerRadius="2,2,2,2">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="0.7*"/>
+                            <RowDefinition Height="0.7*"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <TextBlock Text="{Binding PresetGenMethod, Converter={StaticResource GuideMessage}}"/>
+                        <TextBlock FontSize="18" Text="프리셋 이름:" Grid.Row="1" HorizontalAlignment="Left" Margin="5 0"/>
+                        <Grid Grid.Row="2">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="3*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBox Name="TxtNewPresetName" Text="{Binding NewPresetName, UpdateSourceTrigger=PropertyChanged}" Margin="5 0">
+                                <i:Interaction.Behaviors>
+                                    <local:TextBoxBehavior EnterCommand="{Binding AddNewPresetCommand}"/>
+                                    <local:TextBoxBehavior IsControlFocus="{Binding IsNewPresetNameFocus}"/>
+                                </i:Interaction.Behaviors>
+                            </TextBox>
+                            <Button Content="Ok" Grid.Column="1" Command="{Binding AddNewPresetCommand}" Margin="5 0"/>
+                        </Grid>
+                    </Grid>
+                </Border>
+                <i:Interaction.Triggers>
+                    <i:KeyTrigger Key="Esc">
+                        <i:InvokeCommandAction Command="{Binding ClosePresetNameDialogCommand}"/>
+                    </i:KeyTrigger>
+                </i:Interaction.Triggers>
+            </Popup>
+            <Button Grid.Column="1" Content="Sa_ve" Margin="5 0" Command="{Binding SavePresetCommand}" 
+                    Template="{DynamicResource ButtonTemplate1}"/>
+            <Button Content="_Manage" Grid.Column="2" Margin="5 0" Command="{Binding OpenPresetManagerCommand}"
+                    Template="{DynamicResource ButtonTemplate1}"/>
+            <Popup IsOpen="{Binding PresetManagerOpen}" Placement="Center"
+                   Width="300" Height="300" AllowsTransparency="True">
+                <Border Background="{StaticResource DarkMode.Base.Background}" BorderBrush="Black" BorderThickness="2">
+                    <Grid>
+                        <Grid.Style>
+                            <Style TargetType="Grid">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding PresetRenameDialogOpen}" Value="True">
+                                        <Setter Property="Opacity" Value="0.7"/>
+                                        <Setter Property="IsEnabled" Value="False"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Grid.Style>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="5*"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="2*"/>
+                            <ColumnDefinition Width="30"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <ListBox Name="PresetListBox" ItemsSource="{Binding PresetList}" DisplayMemberPath="Name"
+                                 SelectedIndex="{Binding SelectedPresetManagerIndex}"
+                                 Grid.RowSpan="2" Margin="5"
+                                 Background="{StaticResource DarkMode.Control.Static.Background}">
+                        </ListBox>
+                        <StackPanel Grid.Column="1" Margin="5" VerticalAlignment="Center">
+                            <Button Content="∧" Command="{Binding ItemOrderUpCommand}" Template="{DynamicResource ButtonTemplate1}"/>
+                            <Button Content="∨" Command="{Binding ItemOrderDownCommand}" Template="{DynamicResource ButtonTemplate1}"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="2" Margin="5" VerticalAlignment="Center">
+                            <Button Content="_Add" Margin="0 5" Command="{Binding AddDefaultPresetCommand}" Template="{DynamicResource ButtonTemplate1}"/>
+                            <Button Content="_Copy" Margin="0 5" Command="{Binding CopySelectedPresetCommand}" Template="{DynamicResource ButtonTemplate1}"/>
+                            <Button Content="_Rename" Margin="0 5" Command="{Binding RenameSelectedPresetCommand}" Template="{DynamicResource ButtonTemplate1}"/>
+                            <Button Content="_Delete" Margin="0 5" Command="{Binding DeleteSelectedPresetCommand}" Template="{DynamicResource ButtonTemplate1}"/>
+                        </StackPanel>
+                        <Popup IsOpen="{Binding PresetRenameDialogOpen}" Placement="Center" 
+                               PlacementTarget="{Binding RelativeSource={RelativeSource FindAncestor,AncestorType=Grid,AncestorLevel=1}}"
+                            Width="200" Height="100" StaysOpen="False">
+                            <Border Background="{StaticResource DarkMode.Base.Background}" BorderBrush="Black" BorderThickness="2" CornerRadius="2">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="*"/>
+                                        <RowDefinition Height="0.5*"/>
+                                        <RowDefinition Height="*"/>
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox Text="{Binding NewPresetName,UpdateSourceTrigger=PropertyChanged}" Grid.ColumnSpan="2">
+                                        <i:Interaction.Behaviors>
+                                            <local:TextBoxBehavior EnterCommand="{Binding UpdatePresetNameCommand}" 
+                                                                   IsControlFocus="{Binding IsNewPresetNameFocus}"/>
+                                        </i:Interaction.Behaviors>
+                                        <i:Interaction.Triggers>
+                                            <i:EventTrigger EventName="TextChanged">
+                                                <i:InvokeCommandAction Command="{Binding ValidatePresetNameCommand}" CommandParameter="{Binding NewPresetName}"/>
+                                            </i:EventTrigger>
+                                            <i:KeyTrigger Key="Esc">
+                                                <i:InvokeCommandAction Command="{Binding CloseRenameDialogCommand}"/>
+                                            </i:KeyTrigger>
+                                        </i:Interaction.Triggers>
+                                    </TextBox>
+                                    <TextBlock Grid.Row="1" Grid.ColumnSpan="2">
+                                        <TextBlock.Text>
+                                            <MultiBinding Converter="{StaticResource NameValidationMessage}">
+                                                <Binding Path="IsDuplicated"/>
+                                                <Binding Path="IsEmptyOrWhiteSpace"/>
+                                            </MultiBinding>
+                                        </TextBlock.Text>
+                                    </TextBlock>
+                                    <Button Content="Ok" Command="{Binding UpdatePresetNameCommand}" Grid.Row="2" Template="{DynamicResource ButtonTemplate1}"/>
+                                    <Button Content="Cancel" Command="{Binding CloseRenameDialogCommand}" Grid.Row="2" Grid.Column="1" Template="{DynamicResource ButtonTemplate1}"/>
+                                </Grid>
+                            </Border>
+                        </Popup>
+                        <Button Content="Clos_e" Grid.Row="1" Grid.Column="2" VerticalAlignment="Bottom" Margin="5"
+                                Template="{DynamicResource ButtonTemplate1}" Command="{Binding ClosePresetManagerCommand}"/>
+                    </Grid>
+                </Border>
+                <i:Interaction.Triggers>
+                    <i:KeyTrigger Key="F2">
+                        <i:InvokeCommandAction Command="{Binding RenameSelectedPresetCommand}"/>
+                    </i:KeyTrigger>
+                </i:Interaction.Triggers>
+            </Popup>
         </Grid>
         <Grid Grid.Row="5" Grid.ColumnSpan="2">
             <Grid.ColumnDefinitions>
@@ -172,7 +360,7 @@
                     </MultiBinding>
                 </RadioButton.IsChecked>
             </RadioButton>
-            <RadioButton GroupName="SlideSize" Content="_Normal(4:3)" Grid.Column="2">
+            <RadioButton GroupName="SlideSize" Content="Norm_al(4:3)" Grid.Column="2">
                 <RadioButton.IsChecked>
                     <MultiBinding Converter="{StaticResource SlideSizeConverter}" ConverterParameter="Normal">
                         <Binding Path="SizeType"/>
@@ -295,7 +483,6 @@
                                         FormatString="F2" ClipValueToMinMax="True" 
                                         ToolTip="수직 정렬 기준 위치로 부터 거리&#x0a;양수는 아래, 음수는 위 방향"/>
         </Grid>
-        <CheckBox Content="가사 슬라이드에 제목 포함" Grid.Row="10" Margin="5" ToolTip="현재 미구현 기능입니다"/>
         <Grid Grid.Row="10" Grid.Column="1" HorizontalAlignment="Center">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>

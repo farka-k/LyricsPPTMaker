@@ -117,7 +117,7 @@ namespace LyricsPPTMaker
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
             if (values[0] == DependencyProperty.UnsetValue) 
-                return null;
+                return false;
             return (parameter.ToString() == ((SlideSizeType)values[0]).ToString());
         }
 
@@ -165,7 +165,7 @@ namespace LyricsPPTMaker
 
     public class BoolToTextDecorationConverter : IValueConverter
     {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        public object? Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             return (bool)value ? TextDecorations.Underline : null;
         }
@@ -196,7 +196,7 @@ namespace LyricsPPTMaker
 
     public class AlignmentOffsetToPaddingConverter : IMultiValueConverter
     {
-        public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+        public object? Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
             if (values[0] == DependencyProperty.UnsetValue)
                 return null;
@@ -231,8 +231,8 @@ namespace LyricsPPTMaker
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (String.IsNullOrEmpty((string)value)) return String.Empty;
-            string lyrics=value as string;
+            string lyrics=(string)value;
+            if (String.IsNullOrEmpty(lyrics)) return String.Empty;
             if (!lyrics.Contains('\r'))
             {
                 lyrics=lyrics.Replace("\n", "\r\n");
@@ -242,6 +242,43 @@ namespace LyricsPPTMaker
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotSupportedException();
+        }
+    }
+
+    public class PresetGenerateMethodToGuideMessage : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            PresetGenerationMethod method= (PresetGenerationMethod)value;
+            if (method == PresetGenerationMethod.CopyFromCurrent)
+                return "현재 설정 복사";
+            else    //method==PresetGenerationMethod.Default
+            {
+                return "기본값";
+            }
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotSupportedException();
+        }
+    }
+
+    public class PresetNameValidationToMessage : IMultiValueConverter
+    {
+        public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (values[0] == DependencyProperty.UnsetValue ||
+                values[1] == DependencyProperty.UnsetValue) return String.Empty;
+
+            if ((bool)values[0]) return "중복된 이름";
+            else if ((bool)values[1]) return "공백 이름";
+            else return String.Empty;
+        }
+
+        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
         {
             throw new NotSupportedException();
         }

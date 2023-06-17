@@ -18,11 +18,13 @@
         <local:LyricsVAlignmentConverter x:Key="LyricsVAlignmentConverter"/>
         <local:AlignmentOffsetToPaddingConverter x:Key="AlignmentOffsetToPaddingConverter"/>
         <local:FirstParagraphConverter x:Key="FirstParagraphConverter"/>
-        
+        <local:PresetGenerateMethodToGuideMessage x:Key="GuideMessage"/>
+        <local:PresetNameValidationToMessage x:Key="NameValidationMessage"/>
+
         <SolidColorBrush x:Key="DarkMode.Base.Background" Color="#FF202225"/>
         <SolidColorBrush x:Key="DarkMode.Control.Static.Background" Color="#FF36393F"/>
         <SolidColorBrush x:Key="DarkMode.Control.MouseOver.Background" Color="#FF587483" />
-
+        
         <Style TargetType="{x:Type Control}" x:Key="baseStyle">
             <Setter Property="FontSize" Value="15" />
             <Setter Property="VerticalAlignment" Value="Center" />
