@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿#pragma warning disable CS8600
+using CommunityToolkit.Mvvm.ComponentModel;
 using LyricsPPTMaker.Bases;
 using System.Collections.Generic;
 using DT = System.Drawing.Text;
@@ -16,12 +17,15 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Linq;
 using Microsoft.Win32;
+using System.Reflection;
 
 namespace LyricsPPTMaker.ViewModels
 {
     public partial class MainViewModel : ViewModelBase
     {
+#pragma warning disable CS8618
         public MainViewModel()
+#pragma warning restore CS8618
         {
             Title = "LyricsPPT Maker";
             usagePopupOpen = false;
@@ -65,7 +69,7 @@ namespace LyricsPPTMaker.ViewModels
         [ObservableProperty]
         private int totalSongs;
         [ObservableProperty]
-        private string? lyricsboxText;
+        private string lyricsboxText;
         [ObservableProperty]
         private bool usagePopupOpen;
         #endregion LyricsSearch
@@ -231,7 +235,16 @@ namespace LyricsPPTMaker.ViewModels
             //google custom search api
             string response = string.Empty;
             string? key, cx; int maxSearchCount;
-            using (RegistryKey SearchKey = Registry.CurrentUser.OpenSubKey(@"Software\Lazyworks\LyricsPPTMaker"))
+            var CompanyAttribute = ((AssemblyCompanyAttribute)Attribute.GetCustomAttribute(
+                Assembly.GetExecutingAssembly(), typeof(AssemblyCompanyAttribute), false)).Company;
+            var ProductAttribute = ((AssemblyProductAttribute)Attribute.GetCustomAttribute(
+                Assembly.GetExecutingAssembly(), typeof(AssemblyProductAttribute), false)).Product;
+            StringBuilder regKeyLocation = new StringBuilder();
+            regKeyLocation.Append(@"Software\");
+            regKeyLocation.Append(CompanyAttribute);
+            regKeyLocation.Append('\\');
+            regKeyLocation.Append(ProductAttribute);
+            using (RegistryKey SearchKey = Registry.CurrentUser.OpenSubKey(regKeyLocation.ToString()))
             {
                 if (SearchKey == null)
                 {
@@ -278,7 +291,7 @@ namespace LyricsPPTMaker.ViewModels
             TotalSongs = responseObj.items.Count;
             for (int i = 0; i < TotalSongs; ++i)
             {
-                string? lyricsUrl = responseObj.items[i].link;
+                string lyricsUrl = responseObj.items[i].link;
 
                 var songInfo = LyricsCollector.GetLyrics(lyricsUrl);
                 SongList.Add(songInfo);
@@ -812,3 +825,4 @@ namespace LyricsPPTMaker.ViewModels
         }
     }
 }
+#pragma warning restore CS8600
