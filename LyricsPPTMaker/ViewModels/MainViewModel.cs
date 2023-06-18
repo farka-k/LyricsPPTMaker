@@ -15,6 +15,7 @@ using System.Collections.ObjectModel;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Linq;
+using Microsoft.Win32;
 
 namespace LyricsPPTMaker.ViewModels
 {
@@ -229,13 +230,33 @@ namespace LyricsPPTMaker.ViewModels
             //검색
             //google custom search api
             string response = string.Empty;
-            string? key = Environment.GetEnvironmentVariable("GoogleCustomSearchKey", EnvironmentVariableTarget.User);
-            string? cx = Environment.GetEnvironmentVariable("GoogleCustomSearchEngineID", EnvironmentVariableTarget.User);
-            int maxSearchCount = 5;
-            string requestUrl = "https://www.googleapis.com/customsearch/v1?" + "key=" + key + "&cx=" + cx +
-                "&q=" + SearchboxText + " 가사" + "&num=" + maxSearchCount.ToString();
+            string key, cx; int maxSearchCount;
+            using (RegistryKey SearchKey = Registry.CurrentUser.OpenSubKey(@"Software\Lazyworks\LyricsPPTMaker"))
+            {
+                if (SearchKey == null)
+                {
+                    MessageBox.Show("Can't find Search Api keys.\nPlease Reinstall the application.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+                Object objKey = SearchKey.GetValue("GoogleCustomSearchKey");
+                Object cxKey = SearchKey.GetValue("GoogleCustomSearchEngineID");
+                Object SearchCountKey = SearchKey.GetValue("SearchCount");
+                if (objKey == null || cxKey == null) { return; }
+                key = objKey.ToString();
+                cx = cxKey.ToString();
+                maxSearchCount = (SearchCountKey != null) ? (int)SearchCountKey : 5;
+            }
+            StringBuilder requestUrl = new StringBuilder();
+            requestUrl.Append("https://www.googleapis.com/customsearch/v1?key=");
+            requestUrl.Append(key);
+            requestUrl.Append("&cx=");
+            requestUrl.Append(cx);
+            requestUrl.Append("&q=");
+            requestUrl.Append(SearchboxText);
+            requestUrl.Append(" 가사&num=");
+            requestUrl.Append(maxSearchCount.ToString());
 
-            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(requestUrl);
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(requestUrl.ToString());
             request.Method = "GET";
             request.ContentType = "application/json";
             using (HttpWebResponse resp = (HttpWebResponse)request.GetResponse())
