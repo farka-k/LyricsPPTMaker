@@ -268,6 +268,11 @@ namespace LyricsPPTMaker.ViewModels
                         response = sr.ReadToEnd();
                     }
                 }
+                else
+                {
+                    MessageBox.Show("Unable to use search api.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
             }
             var responseObj = JsonSerializer.Deserialize<GoogleCustomSearchAPIResponseModel>(response);
             TotalSongs = responseObj.items.Count;
