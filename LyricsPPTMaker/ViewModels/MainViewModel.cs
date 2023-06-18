@@ -230,7 +230,7 @@ namespace LyricsPPTMaker.ViewModels
             //검색
             //google custom search api
             string response = string.Empty;
-            string key, cx; int maxSearchCount;
+            string? key, cx; int maxSearchCount;
             using (RegistryKey SearchKey = Registry.CurrentUser.OpenSubKey(@"Software\Lazyworks\LyricsPPTMaker"))
             {
                 if (SearchKey == null)
@@ -238,12 +238,10 @@ namespace LyricsPPTMaker.ViewModels
                     MessageBox.Show("Can't find Search Api keys.\nPlease Reinstall the application.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                     return;
                 }
-                Object objKey = SearchKey.GetValue("GoogleCustomSearchKey");
-                Object cxKey = SearchKey.GetValue("GoogleCustomSearchEngineID");
-                Object SearchCountKey = SearchKey.GetValue("SearchCount");
-                if (objKey == null || cxKey == null) { return; }
-                key = objKey.ToString();
-                cx = cxKey.ToString();
+                key = SearchKey.GetValue("GoogleCustomSearchKey") as string;
+                cx = SearchKey.GetValue("GoogleCustomSearchEngineID") as string;
+                if (String.IsNullOrWhiteSpace(key) || String.IsNullOrWhiteSpace(cx)) return;
+                Object? SearchCountKey = SearchKey.GetValue("SearchCount");
                 maxSearchCount = (SearchCountKey != null) ? (int)SearchCountKey : 5;
             }
             StringBuilder requestUrl = new StringBuilder();
