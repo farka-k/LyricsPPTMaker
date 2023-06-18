@@ -12,8 +12,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "LyricsPPTMakerSetup", "LyricsPPTMakerSetup\LyricsPPTMakerSetup.vdproj", "{F24C1372-6EA5-494E-8ABD-5E3720EC9733}"
 EndProject
-Project("{B7DD6F7E-DEF8-4E67-B5B7-07EF123DB6F0}") = "Setup", "Setup\Setup.wixproj", "{6AD67A24-A54D-4386-86EF-D8A46858F089}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -52,22 +50,6 @@ Global
 		{F24C1372-6EA5-494E-8ABD-5E3720EC9733}.Release|x64.ActiveCfg = Release
 		{F24C1372-6EA5-494E-8ABD-5E3720EC9733}.Release|x64.Build.0 = Release
 		{F24C1372-6EA5-494E-8ABD-5E3720EC9733}.Release|x86.ActiveCfg = Release
-		{6AD67A24-A54D-4386-86EF-D8A46858F089}.Debug|Any CPU.ActiveCfg = Debug|x64
-		{6AD67A24-A54D-4386-86EF-D8A46858F089}.Debug|Any CPU.Build.0 = Debug|x64
-		{6AD67A24-A54D-4386-86EF-D8A46858F089}.Debug|ARM64.ActiveCfg = Debug|ARM64
-		{6AD67A24-A54D-4386-86EF-D8A46858F089}.Debug|ARM64.Build.0 = Debug|ARM64
-		{6AD67A24-A54D-4386-86EF-D8A46858F089}.Debug|x64.ActiveCfg = Debug|x64
-		{6AD67A24-A54D-4386-86EF-D8A46858F089}.Debug|x64.Build.0 = Debug|x64
-		{6AD67A24-A54D-4386-86EF-D8A46858F089}.Debug|x86.ActiveCfg = Debug|x86
-		{6AD67A24-A54D-4386-86EF-D8A46858F089}.Debug|x86.Build.0 = Debug|x86
-		{6AD67A24-A54D-4386-86EF-D8A46858F089}.Release|Any CPU.ActiveCfg = Release|x64
-		{6AD67A24-A54D-4386-86EF-D8A46858F089}.Release|Any CPU.Build.0 = Release|x64
-		{6AD67A24-A54D-4386-86EF-D8A46858F089}.Release|ARM64.ActiveCfg = Release|ARM64
-		{6AD67A24-A54D-4386-86EF-D8A46858F089}.Release|ARM64.Build.0 = Release|ARM64
-		{6AD67A24-A54D-4386-86EF-D8A46858F089}.Release|x64.ActiveCfg = Release|x64
-		{6AD67A24-A54D-4386-86EF-D8A46858F089}.Release|x64.Build.0 = Release|x64
-		{6AD67A24-A54D-4386-86EF-D8A46858F089}.Release|x86.ActiveCfg = Release|x86
-		{6AD67A24-A54D-4386-86EF-D8A46858F089}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
