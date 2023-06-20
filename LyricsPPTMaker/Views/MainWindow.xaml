@@ -166,7 +166,7 @@
         <Popup Name="PopUsage" Placement="Mouse" IsOpen="{Binding UsagePopupOpen}">
             <StackPanel>
                 <TextBlock Text="문단으로 슬라이드를 구분합니다" FontSize="15"/>
-                <Image Source="\Resources\LyricsUsageImage.png" Width="300"/>
+                <Image Source="\Resources\LyricsUsageImage.png" Width="300" />
             </StackPanel>
         </Popup>
         <Grid Grid.Row="4">
