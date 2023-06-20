@@ -16,9 +16,17 @@ namespace LyricsPPTMaker
         XmlSerializer serializer;
         private ObservableCollection<Preset>? _presets;
         private bool isTargetSet = false;
+        private string docFolder;
+        public string presetFolderName;
+        public string presetFolderPath;
+        public string presetFilePath;
         public PresetXMLSerializer()
         {
             serializer=new XmlSerializer(typeof(ObservableCollection<Preset>));
+            docFolder= Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            presetFolderName = "LyricsPPTMaker";
+            presetFolderPath = docFolder + @"\" + presetFolderName;
+            presetFilePath = presetFolderPath + @"\Presets.xml";
         }
 
         public void SetPresetList(ObservableCollection<Preset> presets)
@@ -29,21 +37,30 @@ namespace LyricsPPTMaker
         public void Serialize()
         {
             if (!isTargetSet) { return; }
-            using (StreamWriter wr=new StreamWriter(AppDomain.CurrentDomain.BaseDirectory + @"\Presets.xml"))
+            CheckPresetDirectory();
+            using (StreamWriter wr=new StreamWriter(presetFilePath))
             {
                 serializer.Serialize(wr, _presets);
             }
         }
 
-        public ObservableCollection<Preset>? Deserialize(string outpath)
+        public ObservableCollection<Preset> Deserialize()
         {
-            using (var reader= new StreamReader(outpath))
+            using (var reader= new StreamReader(presetFilePath))
             {
                 _presets = (ObservableCollection<Preset>?) serializer.Deserialize(reader);
             }
             isTargetSet = true;
             return _presets;
         }
+
+        public void CheckPresetDirectory()
+        {
+            if (!Directory.Exists(docFolder + @"\LyricsPPTMaker")) Directory.CreateDirectory(presetFolderPath);
+        }
+
+        public bool PresetFileCreated() => File.Exists(presetFilePath);
+        
     }
 
 }

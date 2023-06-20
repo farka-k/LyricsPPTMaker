@@ -200,13 +200,13 @@ namespace LyricsPPTMaker.ViewModels
         private void InitPreset()
         {
             PresetSerializer = new PresetXMLSerializer();
-            if (!File.Exists(AppDomain.CurrentDomain.BaseDirectory + @"\Presets.xml"))
+            if (!PresetSerializer.PresetFileCreated())
             {
                 PresetSerializer.SetPresetList(PresetList);
                 PresetSerializer.Serialize();
                 return;
             }
-            PresetList=PresetSerializer.Deserialize(AppDomain.CurrentDomain.BaseDirectory+@"Presets.xml");
+            PresetList=PresetSerializer.Deserialize();
         }
 
         private void UpdatePresetFile()

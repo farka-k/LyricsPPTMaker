@@ -6,7 +6,6 @@
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
         xmlns:local="clr-namespace:LyricsPPTMaker"
-        xmlns:vm="clr-namespace:LyricsPPTMaker.ViewModels"
         mc:Ignorable="d"
         Title="{Binding Title}" Name="LyricsPPTMaker" Height="650" Width="600" Icon="..\Resources\song_lyrics_icon_title.ico">
     <Grid Background="{StaticResource DarkMode.Base.Background}">

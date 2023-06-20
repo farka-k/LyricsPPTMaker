@@ -12,6 +12,7 @@
     <Company>Lazyworks</Company>
     <RepositoryUrl>https://github.com/farka-k/LyricsPPTMaker</RepositoryUrl>
     <UseWindowsForms>False</UseWindowsForms>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
